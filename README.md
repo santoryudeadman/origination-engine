@@ -8,10 +8,15 @@ Data from **treg.to**, launched from **omp**.
 
 ```
 repo/
-  pipeline/     the motion — one file, no dependencies
-  site/         the deployable page (static)
-  skills/       the omp skill: type an ICP, get a pipeline
-  .env.example  TREG_TOKEN · ATTIO_TOKEN · kill switch
+  pipeline/         the motion — one file per stage, no dependencies
+    icps/           the ICP profiles (the artifact)
+    rules/          thresholds, gates, spend caps, owner — one per profile
+    lib/            treg · attio · scoring · csv
+  site/             the deployable page (static)
+  scripts/          check-secrets.mjs
+  skills/           the omp skill: type an ICP, get a pipeline
+  HOSTING.md        stack, free tiers, Vercel vs Cloudflare, credential model
+  .env.example      TREG_TOKEN · ATTIO_TOKEN · kill switch
 ```
 
 ---
@@ -105,19 +110,29 @@ duplicating — and the same surface is reachable over MCP.
 
 ## The ICP artifact
 
-`pipeline/icp.md` is the artifact, not a paragraph in a deck. Filters, checks and explicit
-exclusions in one file. Edit it and the pipeline re-compiles — nothing downstream is
-hard-coded.
+`pipeline/icps/mid-market.md` and `pipeline/icps/small-teams.md` are artifacts, not paragraphs
+in a deck. Filters, checks and explicit exclusions in one file each. Edit one and the pipeline
+re-compiles — nothing downstream is hard-coded.
 
-`pipeline/rules.json` holds the numbers:
+The second profile is the interesting one: **under 50 employees, knowledge work**. That is the
+segment most lists fail at, and the motion changes — at that size there is no marketing
+function, so the buyer is the **founder**, and the **signal does more work than the fit**.
+
+`pipeline/rules/<profile>.json` holds the numbers:
 
 ```json
 "thresholds": { "icp_fit_pass": 0.5, "headcount": [51, 200] },
 "spend":      { "cap_per_run_usd": 5.0, "qualify_before_enrich": true },
+"tiers":      { "A": { "min_fit": 0.6, "requires_fresh_signal_days": 90 } },
 "run":        { "owner_of_stop": "@ravadd", "mode": "shadow" }
 ```
 
-Every threshold is a number, every drop has a reason, one person owns the stop.
+A new market is a new profile, not new code:
+
+```bash
+node pipeline/run.mjs --list                 # mid-market, small-teams
+node pipeline/run.mjs --replay --icp small-teams
+```
 
 ---
 
@@ -150,27 +165,33 @@ Activity is not on the list.
 
 ## Deploy
 
-The site is static and has no build step.
+The site is static and has no build step. All three hosts are free for it.
 
 ```bash
 npx wrangler pages deploy site          # Cloudflare Pages
-npx vercel deploy site --prod           # Vercel
+npx vercel deploy site --prod           # Vercel (Hobby is non-commercial only — see HOSTING.md)
 git subtree push --prefix site origin gh-pages   # GitHub Pages
 ```
 
-The page replays the recorded run from `site/data/run.json`; the live pipeline runs from
-the CLI with your keys. Keys are never in the browser.
+The page replays the recorded runs from `site/data/run-<profile>.json`; the live pipeline runs
+from the CLI with your keys. **Keys are never in the browser.**
+
+**[HOSTING.md](./HOSTING.md)** covers the stack, the free-tier limits, why Cloudflare beats
+Vercel for this workload, and the full credential model — what lives where, what we need from
+you, and what we never do. Check the tree for secrets with:
+
+```bash
+node scripts/check-secrets.mjs
+```
 
 ---
 
-## Credits
+## Method & credits
 
-The method is drawn from two published bodies of work:
-
-- **[Apero Advisors](https://aperoadvisors.com/)** — "market construction", "writeback is
-  the product", the keep/skip human gate, and *the boring stack, in order*.
-- **The [treg.to GTM engineering playbook](https://treg.to/gtm-engineering)** — the
-  qualify-before-enrich rule, search-by-function, find-then-verify, and the receipt.
-  Replay data is treg.to's published run of 23 Sep 2026.
+The playbook this follows — qualify before you enrich, search the buyer's *function*, find
+then verify, work fit×timing in tiers, tag every row so pipeline traces back to its source —
+is drawn from the **[treg.to GTM engineering playbook](https://treg.to/gtm-engineering)**,
+and the replay data is treg.to's own published run of 23 Sep 2026. Everything else here is
+ours.
 
 No sends. Propose-only. One owner of the stop.

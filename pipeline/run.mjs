@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // Origination Engine — ICP in, qualified pipeline out.
 //
-//   node run.mjs --replay          replay a recorded run (no network, no spend)  [default]
-//   node run.mjs --live            call treg for real (needs TREG_TOKEN)
-//   node run.mjs --live --write    also upsert into Attio (needs ATTIO_TOKEN)
+//   node run.mjs --replay                    replay the recorded run for an ICP (no network)
+//   node run.mjs --icp small-teams           pick a profile from pipeline/rules/
+//   node run.mjs --live                      call treg for real (needs TREG_TOKEN)
+//   node run.mjs --live --write              also upsert into Attio (needs ATTIO_TOKEN)
 //
 // This pipeline never sends anything. It proposes; a person decides.
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, resolve, basename, extname } from 'node:path';
 import { createHash } from 'node:crypto';
 
 import { parseCsvObjects } from './lib/csv.mjs';
@@ -19,6 +20,7 @@ import { Attio } from './lib/attio.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
+const RULES_DIR = join(HERE, 'rules');
 
 // ── tiny helpers ─────────────────────────────────────────────────────────────
 
@@ -31,12 +33,14 @@ function loadEnv(file = join(ROOT, '.env')) {
 }
 
 function parseArgs(argv) {
-  const a = { live: false, write: false, limit: 25, out: join(ROOT, 'site/data/run.json') };
+  const a = { icp: 'mid-market', live: false, write: false, limit: 25, out: null, list: false };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
     if (t === '--live') a.live = true;
     else if (t === '--replay') a.live = false;
     else if (t === '--write') a.write = true;
+    else if (t === '--list') a.list = true;
+    else if (t === '--icp') a.icp = argv[++i];
     else if (t === '--limit') a.limit = Number(argv[++i]);
     else if (t === '--out') a.out = resolve(argv[++i]);
   }
@@ -47,52 +51,85 @@ const slug = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(
 const sha = (s) => createHash('sha256').update(s).digest('hex').slice(0, 12);
 const usd = (micro) => `$${(micro / 1e6).toFixed(4)}`;
 
-// ── the motion ───────────────────────────────────────────────────────────────
+const profiles = () => readdirSync(RULES_DIR).filter((f) => extname(f) === '.json').map((f) => basename(f, '.json'));
 
-/**
- * Compile a row into a lead: gate it, score it, tier it.
- * Gate first, always — no paid lookup runs on a row that has not passed.
- */
-function compile(row, rules, referenceDate) {
-  const f = fit(row);
-  const g = gate(row, rules);
-  const t = timing(row, referenceDate, rules.tiers.A.requires_fresh_signal_days);
+// ── normalisation: a source row becomes a lead ───────────────────────────────
+// The scoring rules never see where a row came from.
+
+/** A recorded provider run (treg.to shape). */
+function fromCsv(r) {
+  const m = /\((\d{4}-\d{2}-\d{2})\)/.exec(r.latest_news || '');
   return {
-    company: row.company?.replace(/\s*🥇\s*$/, '').trim() || row.company,
-    domain: row.domain || null,
-    fit: f,
-    gate: g.pass ? 'pass' : 'drop',
-    drop_reason: g.pass ? null : g.reason,
-    failed_gate: [...(g.failed || [])][0] ?? null,
-    signal: t.signal ? `${t.signal.kind} (${t.signal.date})` : null,
-    signal_age_days: t.age_days,
-    opener_score: row.opener_score ? Number(row.opener_score) : null,
-    person_found: row.person_found === 'yes',
-    email_provider: row.email_source && row.email_source !== 'none' ? row.email_source : null,
-    verify: row.verify || null,
-    deliverable: deliverable(row),
-    tier: g.pass ? tier(row, rules, referenceDate) : null,
-    source_list: rules.run.name,
-    note: row.note || null,
+    company: (r.company || '').replace(/\s*🥇\s*$/, '').trim(),
+    domain: r.domain || null,
+    fit: r.jev_fit,
+    signal: m ? { kind: (r.latest_news || '').split(' (')[0].trim(), date: m[1] } : null,
+    person_found: r.person_found === 'yes',
+    email_provider: r.email_source && r.email_source !== 'none' ? r.email_source : null,
+    verify: r.verify || null,
+    opener_score: r.opener_score ? Number(r.opener_score) : null,
+    source_url: null,
+    note: r.note || null,
   };
 }
 
-/** Replay: a recorded run. Same gates, same thresholds, no network. */
-function sourceReplay(rules, referenceDate) {
-  const csv = readFileSync(join(ROOT, 'site/data/run.csv'), 'utf8');
-  const rows = parseCsvObjects(csv);
-  return { rows, source: 'replay:site/data/run.csv', rows_scanned: rows.length };
+/** A researched universe (omp-sourced from public sources; no provider enrichment yet). */
+function fromJson(r) {
+  return {
+    company: r.company,
+    domain: r.domain || null,
+    fit: r.fit,
+    signal: r.signal_date ? { kind: r.signal_kind, date: r.signal_date } : null,
+    employees: r.employees ?? null,
+    category: r.category ?? null,
+    buyer_role: r.buyer_role ?? null,
+    employees_source: r.employees_source ?? null,
+    source_url: r.source_url ?? null,
+    person_found: Boolean(r.buyer_role),
+    email_provider: null,
+    verify: null,
+    note: r.fit_reason || null,
+  };
 }
 
-/** Live: build the universe from the ICP. */
+/** Gate, score and tier a normalized lead. */
+function compile(lead, rules, referenceDate) {
+  const g = gate(lead, rules);
+  const t = timing(lead, referenceDate, rules.tiers.A.requires_fresh_signal_days);
+  return {
+    ...lead,
+    fit: fit(lead),
+    gate: g.pass ? 'pass' : 'drop',
+    drop_reason: g.pass ? null : g.reason,
+    failed_gate: [...g.failed][0] ?? null,
+    signal_label: t.signal ? `${t.signal.kind} (${t.signal.date})` : null,
+    signal_age_days: t.age_days,
+    tier: g.pass ? tier(lead, rules, referenceDate) : null,
+    deliverable: deliverable(lead),
+    source_list: rules.run.name,
+  };
+}
+
+// ── sources ──────────────────────────────────────────────────────────────────
+
+function readSource(rules) {
+  const path = join(ROOT, rules.run.source);
+  if (!existsSync(path)) return { rows: [], source: `${rules.run.source} (missing)` };
+  const raw = readFileSync(path, 'utf8');
+  const rows = rules.run.source_format === 'json' ? JSON.parse(raw) : parseCsvObjects(raw);
+  const list = Array.isArray(rows) ? rows : (rows.companies ?? []);
+  return { rows: list, source: `${rules.run.source_format}:${rules.run.source}` };
+}
+
 async function sourceLive(rules, args, log) {
   const treg = new Treg({ capPerRunUsd: rules.spend.cap_per_run_usd });
   const icp = readFileSync(join(HERE, rules.run.icp), 'utf8');
-  const industry = /B2B software/i.test(icp) ? 'software' : undefined;
+  const industry = /software|SaaS/i.test(icp) ? 'software' : undefined;
+  const size = rules.thresholds.headcount;
 
   log(`treg: companies.search  (cap ${usd(rules.spend.cap_per_run_usd * 1e6)})`);
   const found = await treg.companiesSearch({
-    q: 'US B2B software companies, 51-200 staff, selling to sales/marketing/growth',
+    q: `${size[0]}-${size[1]} employee US companies, knowledge work, selling software to businesses`,
     industry,
     country: 'US',
     limit: args.limit,
@@ -100,49 +137,47 @@ async function sourceLive(rules, args, log) {
   const companies = found.output?.companies ?? found.output ?? [];
   log(`treg: ${companies.length} companies, served by ${found._treg?.served_by ?? '—'}`);
 
-  // A row that lacks the fields to judge gets one cheap enrich before any gate.
   const rows = [];
   for (const c of companies) {
-    let row = { company: c.name, domain: c.domain, jev_fit: null };
+    let row = { company: c.name, domain: c.domain, fit: null };
     if (!c.employee_count && c.domain) {
       try {
         const e = await treg.companiesEnrich(c.domain);
-        const o = e.output ?? {};
-        row = { ...row, ...{ headcount: o.employee_count ?? o.employees, description: o.description } };
+        row = { ...row, employees: e.output?.employee_count ?? e.output?.employees };
       } catch (err) { log(`  enrich miss ${c.domain}: ${err.message}`); }
     }
     rows.push(row);
   }
-  return { rows, source: `live:treg.companies.search (${treg.log.length} calls)`, rows_scanned: rows.length, treg };
+  return { rows, source: `live:treg.companies.search (${treg.log.length} calls)`, treg };
 }
 
-/** After the gates: find the person, find the email, verify it. Paid. */
+/** The paid steps. Only ever runs on rows that passed every before_paid gate. */
 async function enrich(leads, rules, treg, log) {
   if (!treg) return leads;
-  const buyerTitle = 'marketing';
+  const title = /under 50|small teams/i.test(readFileSync(join(HERE, rules.run.icp), 'utf8')) ? 'founder' : 'marketing';
   for (const lead of leads) {
     if (lead.gate !== 'pass' || !lead.domain) continue;
     try {
-      const p = await treg.peopleSearch({ companyDomain: lead.domain, title: buyerTitle, country: 'US', limit: 5 });
+      const p = await treg.peopleSearch({ companyDomain: lead.domain, title, country: 'US', limit: 5 });
       const person = (p.output?.people ?? [])[0];
-      if (!person) { log(`  no ${buyerTitle} at ${lead.domain}`); continue; }
+      if (!person) { log(`  no ${title} at ${lead.domain}`); continue; }
       lead.person_found = true;
       lead.person_name = person.full_name || [person.first_name, person.last_name].filter(Boolean).join(' ');
       lead.person_title = person.title;
 
-      const e = await treg.emailFind({ fullName: person.full_name, firstName: person.first_name, lastName: person.last_name, domain: lead.domain, linkedinUrl: person.linkedin_url });
+      const e = await treg.emailFind({
+        fullName: person.full_name, firstName: person.first_name,
+        lastName: person.last_name, domain: lead.domain, linkedinUrl: person.linkedin_url,
+      });
       lead.email = e.output?.email ?? null;
       lead.email_provider = e._treg?.served_by ?? null;
       lead.verify = e._treg?.verification?.verdict ?? e.output?.status ?? null;
       lead.deliverable = lead.verify === 'valid';
-    } catch (err) {
-      log(`  ${lead.domain}: ${err.message}`);
-    }
+    } catch (err) { log(`  ${lead.domain}: ${err.message}`); }
   }
   return leads;
 }
 
-/** Writeback. Writeback is the product. */
 async function writeback(leads, rules, attio, log) {
   const listName = rules.writeback.list.replace('{run.name}', rules.run.name);
   const listId = await attio.createList({ name: listName, apiSlug: slug(listName) });
@@ -152,10 +187,8 @@ async function writeback(leads, rules, attio, log) {
     if (!lead.deliverable || !lead.domain) continue;
     const companyId = await attio.upsertCompany({ domain: lead.domain, name: lead.company });
     const personId = await attio.upsertPerson({
-      email: lead.email,
-      fullName: lead.person_name,
-      title: lead.person_title,
-      companyDomain: lead.domain,
+      email: lead.email, fullName: lead.person_name,
+      title: lead.person_title, companyDomain: lead.domain,
     });
     await attio.addToList({ listId, recordId: companyId, parentObject: 'companies' });
     log(`  ${lead.company} → company ${companyId}, person ${personId} (${lead.email_provider}, ${lead.verify})`);
@@ -170,7 +203,8 @@ function receipt(leads, rules, treg) {
   const foundEmail = named.filter((l) => l.email_provider || l.email);
   const deliverableRows = named.filter((l) => l.deliverable);
   const metered = Boolean(treg) && treg.log.length > 0;
-  const spendMicro = metered ? treg.spentMicro : 2_330_000; // the recorded run cost $2.33
+  const recorded = leads.some((l) => l.email_provider || l.verify);
+  const spendMicro = metered ? treg.spentMicro : (recorded ? 2_330_000 : 0);
 
   const tiers = { A: 0, B: 0, C: 0 };
   for (const l of passed) if (l.tier) tiers[l.tier] += 1;
@@ -182,12 +216,15 @@ function receipt(leads, rules, treg) {
     dropped_fit: leads.filter((l) => l.failed_gate === 'icp_fit').length,
     passed: passed.length,
     dropped_before_paying: leads.length - passed.length,
-    spend_source: metered ? 'metered' : 'recorded (treg.to published run, 2026-09-23)',
     people_named: named.length,
     emails_found: foundEmail.length,
     deliverable: deliverableRows.length,
     unknown_verdict: named.filter((l) => l.verify === 'unknown').length,
     invalid: named.filter((l) => l.verify === 'invalid').length,
+    enrichment: metered ? 'metered' : (recorded ? 'recorded' : 'not_run'),
+    spend_source: metered
+      ? 'metered'
+      : (recorded ? 'recorded (treg.to published run, 2026-09-23)' : 'none — no paid steps run'),
     tiers,
     spend_micro: spendMicro,
     spend_usd: Number((spendMicro / 1e6).toFixed(4)),
@@ -204,9 +241,15 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const log = (s) => console.log(s);
 
-  const rules = JSON.parse(readFileSync(join(HERE, 'rules.json'), 'utf8'));
+  if (args.list) { log(profiles().join('\n')); return; }
+  if (!existsSync(join(RULES_DIR, `${args.icp}.json`))) {
+    throw new Error(`unknown ICP "${args.icp}". Try: ${profiles().join(', ')}`);
+  }
+
+  const rules = JSON.parse(readFileSync(join(RULES_DIR, `${args.icp}.json`), 'utf8'));
   const icp = readFileSync(join(HERE, rules.run.icp), 'utf8');
   const referenceDate = rules.run.reference_date;
+  const out = args.out ?? join(ROOT, `site/data/run-${args.icp}.json`);
 
   const killSwitch = (process.env.ORIGINATION_KILL_SWITCH || 'off') === 'on';
   if (killSwitch && args.live) {
@@ -214,40 +257,38 @@ async function main() {
     return;
   }
 
-  log(`run      ${rules.run.name}`);
+  log(`icp      ${args.icp}  (${rules.run.name})`);
   log(`mode     ${args.live ? 'live' : 'replay'}${args.write ? ' + write' : ' (propose-only)'}`);
-  log(`icp      ${rules.run.icp}  sha256:${sha(icp)}`);
+  log(`profile  ${rules.run.icp}  sha256:${sha(icp)}`);
   log(`rules    sha256:${sha(JSON.stringify(rules))}`);
   log('');
 
-  const { rows, source, treg } = args.live
-    ? await sourceLive(rules, args, log)
-    : sourceReplay(rules, referenceDate);
-  log(`source   ${source}`);
+  const src = args.live ? await sourceLive(rules, args, log) : readSource(rules);
+  const { rows, treg } = src;
+  log(`source   ${src.source}`);
   log('');
 
-  // 1. compile + free gates
-  let leads = rows.map((r) => compile(r, rules, referenceDate));
+  const normalize = rules.run.source_format === 'json' ? fromJson : fromCsv;
+  let leads = rows.map((r) => compile(normalize(r), rules, referenceDate));
+
   const dropped = leads.filter((l) => l.gate === 'drop');
   log(`gates    ${leads.length - dropped.length} pass / ${dropped.length} drop (free — no lookups spent)`);
   for (const d of dropped.slice(0, 4)) log(`           × ${d.company} — ${d.drop_reason}`);
 
-  // 2. paid steps — only on rows that passed
   leads = await enrich(leads, rules, treg, log);
 
-  // 3. writeback
   const attio = new Attio({ dryRun: !args.write, log: (l) => log(`           ${l}`) });
   await writeback(leads, rules, attio, log);
 
-  // 4. receipt
   const r = receipt(leads, rules, treg);
   log('');
-  log(`receipt  ${r.passed} passed · ${r.deliverable} deliverable · ${usd(r.spend_micro)} ($${r.cost_per_deliverable_usd}/deliverable)`);
+  log(`receipt  ${r.passed} passed · ${r.deliverable} deliverable · ${usd(r.spend_micro)} (enrichment: ${r.enrichment})`);
   log(`tiers    A ${r.tiers.A} · B ${r.tiers.B} · C ${r.tiers.C}`);
   log(`attio    ${JSON.stringify(attio.receipt())}`);
 
-  const out = {
+  writeFileSync(out, JSON.stringify({
     meta: {
+      icp: args.icp,
       run: rules.run.name,
       generated_at: new Date().toISOString(),
       reference_date: referenceDate,
@@ -255,16 +296,16 @@ async function main() {
       rules_sha256: sha(JSON.stringify(rules)),
       owner_of_stop: rules.run.owner_of_stop,
       autonomy: rules.safety.autonomy,
-      source,
-      pipeline_version: '1.0.0',
+      thresholds: rules.thresholds,
+      tiers_rule: rules.tiers,
+      source: src.source,
+      pipeline_version: '1.1.0',
     },
     receipt: r,
-    tiers: rules.tiers,
     leads: leads.sort((a, b) => (b.fit ?? 0) - (a.fit ?? 0)),
     treg_calls: treg ? treg.log : [],
-  };
-  writeFileSync(args.out, JSON.stringify(out, null, 2));
-  log(`→ ${args.out}`);
+  }, null, 2));
+  log(`→ ${out}`);
 }
 
 main().catch((err) => { console.error('\n✗', err.message); if (err.detail) console.error(err.detail); process.exit(1); });

@@ -96,20 +96,22 @@
   <section class="wrap section" id="console">
     <h2 class="h2">The console</h2>
     <p class="sub">
-      This is a recorded run, replayed by <code>pipeline/run.mjs</code> with no network and no spend.
-      Move the threshold — it is a number in a file, not a vibe.
+      Two profiles, one pipeline. Switch between a mid-market universe and a <strong>small-team</strong>
+      universe — companies under 50 employees, where the buyer is the founder and the signal matters
+      more than the fit. Replayed by <code>pipeline/run.mjs</code> with no network and no spend.
+      Move the threshold: it is a number in a file, not a vibe.
     </p>
 
     <div class="console">
       <aside class="controls">
-        <h3>ICP</h3>
-        <dl class="filters">
-          <div><dt>country</dt><dd>US</dd></div>
-          <div><dt>headcount</dt><dd>51–200</dd></div>
-          <div><dt>category</dt><dd>B2B software</dd></div>
-          <div><dt>buyer function</dt><dd>marketing / growth</dd></div>
-          <div><dt>exclusions</dt><dd>services, pre-product, in-CRM</dd></div>
-        </dl>
+        <h3>ICP profile</h3>
+        <div class="seg icpseg" id="icp-switch" role="group" aria-label="choose ICP profile">
+          <button class="on" data-icp="mid-market">Mid-market<br /><small>51–200</small></button>
+          <button data-icp="small-teams">Small teams<br /><small>under 50</small></button>
+        </div>
+
+        <dl class="filters" id="filters"></dl>
+        <p class="hint" id="profile-note"></p>
 
         <label class="slider">
           <span>fit threshold <output id="thr-out">0.50</output></span>
@@ -192,10 +194,10 @@
 <span class="s">  buyer is marketing or growth"</span>. Use Attio. Use treg for data.
 <span class="s">  Show me the receipt, and tell me what not to automate.</span>
 
-<span class="c">├─</span> scout   Apero interview   → <span class="ok">stack, doctrine, metrics, vocabulary</span>
-<span class="c">├─</span> scout   treg contracts    → <span class="ok">4 routed tools, prices, verify verdicts</span>
-<span class="c">├─</span> scout   Attio API         → <span class="ok">upsert keys, list entries, scopes, ordering</span>
-<span class="c">└─</span> build   compile ICP → gates → people → verify → Attio writeback
+<span class="c">├─</span> scout   ICP + market     → <span class="ok">segment, buyers, public sources, fit rules</span>
+<span class="c">├─</span> scout   data contracts    → <span class="ok">routed tools, prices, verify verdicts</span>
+<span class="c">├─</span> scout   CRM API           → <span class="ok">upsert keys, list entries, scopes, ordering</span>
+<span class="c">└─</span> build   compile ICP → gates → people → verify → CRM writeback
       <span class="ok">✓ receipt reproduced: 27 passed · 20 deliverable · $0.1165/lead</span></pre>
     </div>
     <div class="splits3">
@@ -308,10 +310,11 @@ git subtree push --prefix site origin gh-pages</pre>
 
 <footer class="wrap foot">
   <p>
-    <b>Origination Engine</b> — a GTM engineering demo. Method drawn from
-    <a href="https://aperoadvisors.com/blog/how-to-build-a-network-mining-tool" target="_blank" rel="noopener">Apero Advisors' published work</a>
-    and the <a href="https://treg.to/gtm-engineering" target="_blank" rel="noopener">treg.to GTM engineering playbook</a>.
-    Replay data is treg.to's <a href="https://github.com/superdesigndev/treg" target="_blank" rel="noopener">published run</a> (23 Sep 2026).
+    <b>Origination Engine</b> — a GTM engineering demo. The method: qualify before you enrich,
+    search the buyer's <em>function</em>, find then verify, and keep a receipt for every row.
+    Data layer is <a href="https://treg.to/gtm-engineering" target="_blank" rel="noopener">treg.to</a>;
+    replay data is treg.to's
+    <a href="https://github.com/superdesigndev/treg" target="_blank" rel="noopener">published run</a> (23 Sep 2026).
   </p>
   <p class="mono">no sends · propose-only · one owner of the stop</p>
 </footer>

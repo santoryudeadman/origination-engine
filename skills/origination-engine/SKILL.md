@@ -19,9 +19,9 @@ before something cheap has passed.
 
 | # | Step | Tool | Rule |
 |---|------|------|------|
-| 1 | Compile the ICP into **filters** + **checks** | `pipeline/icp.md` | If a part of the ICP cannot be a filter, it is a check, and it runs before any expensive step. |
-| 2 | **Count, then qualify** — free gates first | `pipeline/rules.json` | No expensive lookup runs on a row that has not passed. Every drop carries a reason. |
-| 3 | **Find the person** by function | `treg.people.search` | Search the buyer's function; a "decision makers" list is a map of the company, not your committee. |
+| 1 | Compile the ICP into **filters** + **checks** | `pipeline/icps/*.md` | If a part of the ICP cannot be a filter, it is a check, and it runs before any expensive step. |
+| 2 | **Count, then qualify** — free gates first | `pipeline/rules/*.json` | No expensive lookup runs on a row that has not passed. Every drop carries a reason. |
+| 3 | **Find the person** by function | `treg.people.search` | Search the buyer's function; a "decision makers" list is a map of the company, not your committee. Under 50 staff, search the founder. |
 | 4 | **Find, then verify** the email | `treg.people.email.find` + `verify` | Only a verified-deliverable address enters the sequence. Found is not deliverable. |
 | 5 | **Write back** | `pipeline/lib/attio.mjs` | Company first, then person (a record-reference cannot create its target). Writeback is the product. |
 
@@ -30,6 +30,8 @@ before something cheap has passed.
 ```bash
 # replay a recorded run — no keys, no spend, deterministic
 node pipeline/run.mjs --replay
+node pipeline/run.mjs --replay --icp small-teams   # under-50 profile
+node pipeline/run.mjs --list                       # available profiles
 
 # real run: source, enrich, verify (needs TREG_TOKEN)
 node pipeline/run.mjs --live
@@ -39,6 +41,10 @@ node pipeline/run.mjs --live --write
 ```
 
 Setup for the data layer is one line: `set up treg — https://treg.to/llms.txt`.
+
+**A new market is a new profile**, not new code: add `pipeline/icps/<slug>.md` and
+`pipeline/rules/<slug>.json`, then `node run.mjs --icp <slug>`. The slug picks the rules,
+the rules name the ICP and the source, and the run writes `site/data/run-<slug>.json`.
 
 ## Guardrails — do not skip these
 

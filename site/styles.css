@@ -116,6 +116,10 @@ input[type=range]::-moz-range-thumb { width: 15px; height: 15px; border: 2px sol
 .seg button + button { border-left: 1px solid var(--line-2); }
 .seg button:hover { background: var(--panel-2); color: var(--ink); }
 .seg button.on { background: var(--accent); color: #0a0b0d; font-weight: 600; }
+.icpseg { margin: 0 0 20px; }
+.icpseg button { padding: 9px 0; line-height: 1.25; font-family: var(--sans); font-size: 12px; }
+.icpseg small { display: block; font-family: var(--mono); font-size: 10px; opacity: .75; }
+#profile-note { margin: -6px 0 18px; }
 
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
 
