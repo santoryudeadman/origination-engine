@@ -63,6 +63,7 @@ function fromCsv(r) {
     company: (r.company || '').replace(/\s*🥇\s*$/, '').trim(),
     domain: r.domain || null,
     fit: r.jev_fit,
+    headcount: null, // a bought list carries no verified headcount — the size gate stays silent
     signal: m ? { kind: (r.latest_news || '').split(' (')[0].trim(), date: m[1] } : null,
     person_found: r.person_found === 'yes',
     email_provider: r.email_source && r.email_source !== 'none' ? r.email_source : null,
@@ -79,6 +80,7 @@ function fromJson(r) {
     company: r.company,
     domain: r.domain || null,
     fit: r.fit,
+    headcount: r.employees ?? null,
     signal: r.signal_date ? { kind: r.signal_kind, date: r.signal_date } : null,
     employees: r.employees ?? null,
     category: r.category ?? null,

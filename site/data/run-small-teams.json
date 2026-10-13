@@ -2,10 +2,10 @@
   "meta": {
     "icp": "small-teams",
     "run": "us-small-teams-under-50",
-    "generated_at": "2026-10-13T18:58:29.954Z",
+    "generated_at": "2026-10-13T18:59:08.683Z",
     "reference_date": "2026-10-13",
     "icp_sha256": "c7ba90ac8d1c",
-    "rules_sha256": "97bff49863f4",
+    "rules_sha256": "5b24e3e4a476",
     "owner_of_stop": "@ravadd",
     "autonomy": "shadow",
     "thresholds": {
@@ -35,13 +35,13 @@
     "pipeline_version": "1.1.0"
   },
   "receipt": {
-    "scanned": 20,
-    "with_domain": 20,
+    "scanned": 30,
+    "with_domain": 30,
     "no_domain": 0,
     "dropped_fit": 0,
-    "passed": 20,
+    "passed": 30,
     "dropped_before_paying": 0,
-    "people_named": 20,
+    "people_named": 30,
     "emails_found": 0,
     "deliverable": 0,
     "unknown_verdict": 0,
@@ -49,9 +49,9 @@
     "enrichment": "not_run",
     "spend_source": "none — no paid steps run",
     "tiers": {
-      "A": 13,
-      "B": 7,
-      "C": 0
+      "A": 14,
+      "B": 15,
+      "C": 1
     },
     "spend_micro": 0,
     "spend_usd": 0,
@@ -64,6 +64,7 @@
       "company": "Lingo.dev",
       "domain": "lingo.dev",
       "fit": 0.9,
+      "headcount": 7,
       "signal": {
         "kind": "product release",
         "date": "2026-10-09"
@@ -90,6 +91,7 @@
       "company": "Covera",
       "domain": "covera-agents.com",
       "fit": 0.88,
+      "headcount": 2,
       "signal": null,
       "employees": 2,
       "category": "insurtech — agency workflow automation",
@@ -113,6 +115,7 @@
       "company": "Speko",
       "domain": "speko.ai",
       "fit": 0.87,
+      "headcount": 4,
       "signal": {
         "kind": "launch",
         "date": "2026-08-17"
@@ -139,6 +142,7 @@
       "company": "Hesper AI",
       "domain": "gethesperai.com",
       "fit": 0.86,
+      "headcount": 2,
       "signal": {
         "kind": "industry report",
         "date": "2026-09-27"
@@ -165,6 +169,7 @@
       "company": "Maritime",
       "domain": "maritime.sh",
       "fit": 0.86,
+      "headcount": 3,
       "signal": {
         "kind": "launch",
         "date": "2026-10-13"
@@ -188,9 +193,37 @@
       "source_list": "us-small-teams-under-50"
     },
     {
+      "company": "Topline Pro",
+      "domain": "toplinepro.com",
+      "fit": 0.86,
+      "headcount": 28,
+      "signal": {
+        "kind": "launches",
+        "date": "2026-07-29"
+      },
+      "employees": 28,
+      "category": "vertical SaaS — home services",
+      "buyer_role": "Head of Growth (or founder/CEO)",
+      "employees_source": "Y Combinator company profile",
+      "source_url": "https://toplinepro.com",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Vertical SaaS for home-service pros with self-serve signup and a lean sub-30 team.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": "launches (2026-07-29)",
+      "signal_age_days": 76,
+      "tier": "A",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
       "company": "Tokenless",
       "domain": "usetokenless.com",
       "fit": 0.85,
+      "headcount": 3,
       "signal": {
         "kind": "launch",
         "date": "2026-07-29"
@@ -217,6 +250,7 @@
       "company": "HyperProbe",
       "domain": "hyperprobe.co",
       "fit": 0.85,
+      "headcount": 8,
       "signal": {
         "kind": "launch",
         "date": "2026-08-05"
@@ -243,6 +277,7 @@
       "company": "boxes.dev",
       "domain": "boxes.dev",
       "fit": 0.85,
+      "headcount": 2,
       "signal": {
         "kind": "launch",
         "date": "2026-06-02"
@@ -269,6 +304,7 @@
       "company": "Outmarket AI",
       "domain": "outmarket.ai",
       "fit": 0.85,
+      "headcount": 42,
       "signal": {
         "kind": "series A funding",
         "date": "2026-05-13"
@@ -292,9 +328,88 @@
       "source_list": "us-small-teams-under-50"
     },
     {
+      "company": "Greenboard",
+      "domain": "greenboard.com",
+      "fit": 0.85,
+      "headcount": 35,
+      "signal": {
+        "kind": "receives financing",
+        "date": "2026-05-12"
+      },
+      "employees": 35,
+      "category": "vertical SaaS — financial compliance",
+      "buyer_role": "Head of Growth (or founder/CEO)",
+      "employees_source": "Y Combinator company directory",
+      "source_url": "https://greenboard.com",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Vertical compliance-workflow SaaS for financial firms with a book-demo funnel and a lean team.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": "receives financing (2026-05-12)",
+      "signal_age_days": 154,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
+      "company": "Superorder",
+      "domain": "superorder.com",
+      "fit": 0.83,
+      "headcount": 30,
+      "signal": null,
+      "employees": 30,
+      "category": "vertical SaaS — restaurant operations",
+      "buyer_role": "Head of Marketing (or founder/CEO)",
+      "employees_source": "Y Combinator company profile",
+      "source_url": "https://superorder.com",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Vertical SaaS agents for restaurant chains with public pricing and a book-demo funnel.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": null,
+      "signal_age_days": null,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
+      "company": "Rebar",
+      "domain": "withrebar.ai",
+      "fit": 0.83,
+      "headcount": 30,
+      "signal": {
+        "kind": "receives financing",
+        "date": "2026-03-10"
+      },
+      "employees": 30,
+      "category": "vertical SaaS — construction/HVAC estimating",
+      "buyer_role": "VP Sales (or founder/CEO)",
+      "employees_source": "Prudence job-posting metadata; BuiltIn 26",
+      "source_url": "https://withrebar.ai",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Vertical AI estimating SaaS for mechanical contractors; small NYC team post-Series A.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": "receives financing (2026-03-10)",
+      "signal_age_days": 217,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
       "company": "ByteAsk",
       "domain": "byteask.ai",
       "fit": 0.82,
+      "headcount": 2,
       "signal": {
         "kind": "funding",
         "date": "2026-09-24"
@@ -321,6 +436,7 @@
       "company": "Corsair",
       "domain": "corsair.dev",
       "fit": 0.82,
+      "headcount": 2,
       "signal": {
         "kind": "product release",
         "date": "2026-07-16"
@@ -347,6 +463,7 @@
       "company": "Solva",
       "domain": "solvatechnology.com",
       "fit": 0.8,
+      "headcount": 15,
       "signal": {
         "kind": "company spotlight",
         "date": "2026-09-27"
@@ -373,6 +490,7 @@
       "company": "Workers IO",
       "domain": "workers.io",
       "fit": 0.8,
+      "headcount": 2,
       "signal": {
         "kind": "product release",
         "date": "2026-08-30"
@@ -399,6 +517,7 @@
       "company": "Pomerado",
       "domain": "pomerado.ai",
       "fit": 0.8,
+      "headcount": 2,
       "signal": null,
       "employees": 2,
       "category": "dev tools — site to API/MCP",
@@ -419,9 +538,61 @@
       "source_list": "us-small-teams-under-50"
     },
     {
+      "company": "SwiftSku",
+      "domain": "swiftsku.com",
+      "fit": 0.8,
+      "headcount": 35,
+      "signal": {
+        "kind": "receives financing",
+        "date": "2026-03-24"
+      },
+      "employees": 35,
+      "category": "vertical SaaS — convenience-store back office",
+      "buyer_role": "Founder/Owner or VP Operations",
+      "employees_source": "Y Combinator company directory",
+      "source_url": "https://swiftsku.com",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Vertical back-office SaaS with public pricing and a self-serve/quote funnel.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": "receives financing (2026-03-24)",
+      "signal_age_days": 203,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
+      "company": "AiSDR",
+      "domain": "aisdr.com",
+      "fit": 0.8,
+      "headcount": 34,
+      "signal": null,
+      "employees": 34,
+      "category": "workflow SaaS — AI outbound agent",
+      "buyer_role": "Head of Growth (or VP Sales)",
+      "employees_source": "Y Combinator company directory",
+      "source_url": "https://aisdr.com",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "B2B SaaS agent with self-serve signup plus a demo funnel; small US team.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": null,
+      "signal_age_days": null,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
       "company": "Amera",
       "domain": "amerahealthsolutions.com",
       "fit": 0.78,
+      "headcount": 12,
       "signal": {
         "kind": "product launch",
         "date": "2025-11-06"
@@ -445,9 +616,37 @@
       "source_list": "us-small-teams-under-50"
     },
     {
+      "company": "Tint",
+      "domain": "tint.ai",
+      "fit": 0.78,
+      "headcount": 40,
+      "signal": {
+        "kind": "launches",
+        "date": "2025-10-15"
+      },
+      "employees": 40,
+      "category": "vertical SaaS — embedded insurance infrastructure",
+      "buyer_role": "Head of Partnerships (or founder/CEO)",
+      "employees_source": "Y Combinator company directory",
+      "source_url": "https://tint.ai",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "B2B embedded-insurance OS selling to platforms and MGAs with a demo-request funnel.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": "launches (2025-10-15)",
+      "signal_age_days": 363,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
       "company": "Avallon AI",
       "domain": "avallon.ai",
       "fit": 0.76,
+      "headcount": 7,
       "signal": {
         "kind": "seed funding",
         "date": "2025-11-06"
@@ -474,6 +673,7 @@
       "company": "Qlo",
       "domain": "getqlo.com",
       "fit": 0.74,
+      "headcount": 2,
       "signal": {
         "kind": "product launch",
         "date": "2026-08-20"
@@ -500,6 +700,7 @@
       "company": "Avoca Systems",
       "domain": "avocasystems.com",
       "fit": 0.74,
+      "headcount": 6,
       "signal": {
         "kind": "product launch",
         "date": "2026-07-28"
@@ -523,9 +724,37 @@
       "source_list": "us-small-teams-under-50"
     },
     {
+      "company": "Paragon",
+      "domain": "useparagon.com",
+      "fit": 0.72,
+      "headcount": 48,
+      "signal": {
+        "kind": "launches",
+        "date": "2026-05-06"
+      },
+      "employees": 48,
+      "category": "workflow SaaS — integration infrastructure",
+      "buyer_role": "Co-founder/CEO",
+      "employees_source": "Y Combinator company directory",
+      "source_url": "https://useparagon.com",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Integration/workflow infrastructure SaaS with self-serve signup; buyer skews technical.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": "launches (2026-05-06)",
+      "signal_age_days": 160,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
       "company": "TovenAI",
       "domain": "toven.ai",
       "fit": 0.7,
+      "headcount": 2,
       "signal": {
         "kind": "product launch",
         "date": "2026-08-19"
@@ -552,6 +781,7 @@
       "company": "Theo AI",
       "domain": "theoai.ai",
       "fit": 0.68,
+      "headcount": 30,
       "signal": {
         "kind": "funding round",
         "date": "2025-11-12"
@@ -571,6 +801,54 @@
       "signal_label": "funding round (2025-11-12)",
       "signal_age_days": 335,
       "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
+      "company": "Aurelian",
+      "domain": "aurelian.com",
+      "fit": 0.6,
+      "headcount": 45,
+      "signal": null,
+      "employees": 45,
+      "category": "vertical SaaS — public safety / 911 centers",
+      "buyer_role": "Co-founder/CEO",
+      "employees_source": "Y Combinator company profile",
+      "source_url": "https://aurelian.com",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Vertical AI for 911 centers with a demo-request funnel; buyers are public agencies, not business buyers.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": null,
+      "signal_age_days": null,
+      "tier": "B",
+      "deliverable": false,
+      "source_list": "us-small-teams-under-50"
+    },
+    {
+      "company": "GETASAP",
+      "domain": "getasap.us",
+      "fit": 0.52,
+      "headcount": 30,
+      "signal": null,
+      "employees": 30,
+      "category": "ops — food distribution & freight logistics",
+      "buyer_role": "Head of Sales (or founder/CEO)",
+      "employees_source": "Y Combinator company directory",
+      "source_url": "https://getasap.us",
+      "person_found": true,
+      "email_provider": null,
+      "verify": null,
+      "note": "Demand-intelligence software, but a delivery-heavy operator rather than a pure software vendor.",
+      "gate": "pass",
+      "drop_reason": null,
+      "failed_gate": null,
+      "signal_label": null,
+      "signal_age_days": null,
+      "tier": "C",
       "deliverable": false,
       "source_list": "us-small-teams-under-50"
     }

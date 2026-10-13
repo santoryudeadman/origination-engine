@@ -35,6 +35,13 @@ export function gate(lead, rules) {
   const f = fit(lead);
 
   if (!lead.domain) failed.push('has_domain');
+
+  // Size applies only when the headcount is actually known — an unknown is not a failure.
+  const band = rules.thresholds.headcount;
+  if (band && lead.headcount != null) {
+    if (lead.headcount < band[0] || lead.headcount > band[1]) failed.push('size');
+  }
+
   if (f === null || f < rules.thresholds.icp_fit_pass) failed.push('icp_fit');
 
   const set = new Set(failed);

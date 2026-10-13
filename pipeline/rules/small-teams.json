@@ -18,13 +18,18 @@
   "gates": [
     { "id": "has_domain", "rule": "primary domain present", "on_fail": "drop",
       "reason": "no primary domain — nothing to enrich against", "before_paid": true },
-    { "id": "size", "rule": "headcount <= 49", "on_fail": "drop",
+    { "id": "size", "rule": "headcount within thresholds.headcount", "on_fail": "drop",
       "reason": "outside the size band — this profile is for teams under 50", "before_paid": true },
-    { "id": "category", "rule": "is software, not services", "on_fail": "drop",
-      "reason": "services/agency — no product funnel to instrument", "before_paid": true },
     { "id": "icp_fit", "rule": "fit >= icp_fit_pass", "on_fail": "drop",
       "reason": "fit below threshold — recorded, not bought", "before_paid": true }
   ],
+
+  "checks": {
+    "$comment": "Judgement per row, folded into the fit score. If a criterion cannot be a filter, it is a check — and a check runs before any expensive step.",
+    "product_not_services": "is a product company, not a consultancy/agency",
+    "gtm_owner_present": "a founder or first commercial hire owns the funnel",
+    "activity_12mo": "dated activity in the last 12 months"
+  },
 
   "tiers": {
     "$comment": "In this segment the signal does more work than the fit: a 12-person company that just raised is a different company next quarter.",

@@ -2,10 +2,10 @@
   "meta": {
     "icp": "mid-market",
     "run": "us-b2b-software-51-200",
-    "generated_at": "2026-10-13T18:58:30.261Z",
+    "generated_at": "2026-10-13T18:59:08.370Z",
     "reference_date": "2026-09-23",
     "icp_sha256": "7cf6f75a3dfb",
-    "rules_sha256": "d057e2574494",
+    "rules_sha256": "628bef24f2a5",
     "owner_of_stop": "@ravadd",
     "autonomy": "shadow",
     "thresholds": {
@@ -64,6 +64,7 @@
       "company": "PermitFlow",
       "domain": "permitflow.com",
       "fit": 0.67,
+      "headcount": null,
       "signal": {
         "kind": "receives_financing",
         "date": "2025-12-03"
@@ -87,6 +88,7 @@
       "company": "Certa.ai",
       "domain": "certa.ai",
       "fit": 0.67,
+      "headcount": null,
       "signal": {
         "kind": "recognized_as",
         "date": "2026-06-08"
@@ -110,6 +112,7 @@
       "company": "Orum",
       "domain": "orum.com",
       "fit": 0.66,
+      "headcount": null,
       "signal": {
         "kind": "acquires",
         "date": "2026-07-15"
@@ -133,6 +136,7 @@
       "company": "gnani.ai",
       "domain": "gnani.ai",
       "fit": 0.65,
+      "headcount": null,
       "signal": {
         "kind": "launches",
         "date": "2026-08-29"
@@ -156,6 +160,7 @@
       "company": "Hebbia",
       "domain": "hebbia.com",
       "fit": 0.65,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": null,
@@ -176,6 +181,7 @@
       "company": "Doxel",
       "domain": "doxel.ai",
       "fit": 0.65,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": "trykitt",
@@ -196,6 +202,7 @@
       "company": "Hypersonix Inc.",
       "domain": "hypersonix.ai",
       "fit": 0.64,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": "hunter",
@@ -216,6 +223,7 @@
       "company": "Entropik",
       "domain": "entropik.io",
       "fit": 0.64,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": null,
@@ -236,6 +244,7 @@
       "company": "Wispr Flow",
       "domain": "wisprflow.ai",
       "fit": 0.63,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": null,
@@ -256,6 +265,7 @@
       "company": "Gigs",
       "domain": "gigs.com",
       "fit": 0.62,
+      "headcount": null,
       "signal": {
         "kind": "partners_with",
         "date": "2026-08-17"
@@ -279,6 +289,7 @@
       "company": "Gamma",
       "domain": "gamma.app",
       "fit": 0.61,
+      "headcount": null,
       "signal": {
         "kind": "launches",
         "date": "2026-09-21"
@@ -302,6 +313,7 @@
       "company": "Aligned",
       "domain": "alignedup.com",
       "fit": 0.6,
+      "headcount": null,
       "signal": {
         "kind": "receives_financing",
         "date": "2026-07-01"
@@ -325,6 +337,7 @@
       "company": "RemotePass",
       "domain": "remotepass.com",
       "fit": 0.6,
+      "headcount": null,
       "signal": {
         "kind": "invests_into",
         "date": "2026-08-11"
@@ -348,6 +361,7 @@
       "company": "Aha!",
       "domain": "aha.io",
       "fit": 0.6,
+      "headcount": null,
       "signal": {
         "kind": "identified_as_competitor_of",
         "date": "2025-11-24"
@@ -371,6 +385,7 @@
       "company": "Prophecy",
       "domain": "prophecy.ai",
       "fit": 0.59,
+      "headcount": null,
       "signal": {
         "kind": "launches",
         "date": "2026-09-08"
@@ -394,6 +409,7 @@
       "company": "AppCard, Inc.",
       "domain": "appcard.com",
       "fit": 0.58,
+      "headcount": null,
       "signal": {
         "kind": "launches",
         "date": "2026-08-19"
@@ -417,6 +433,7 @@
       "company": "Jones Software",
       "domain": "getjones.com",
       "fit": 0.58,
+      "headcount": null,
       "signal": {
         "kind": "hires",
         "date": "2026-01-14"
@@ -440,6 +457,7 @@
       "company": "Triomics",
       "domain": "triomics.com",
       "fit": 0.58,
+      "headcount": null,
       "signal": {
         "kind": "invests_into",
         "date": "2026-06-01"
@@ -463,6 +481,7 @@
       "company": "Mighty Networks",
       "domain": "mightynetworks.com",
       "fit": 0.57,
+      "headcount": null,
       "signal": {
         "kind": "loses_client",
         "date": "2026-05-14"
@@ -486,6 +505,7 @@
       "company": "ChurnZero",
       "domain": "churnzero.com",
       "fit": 0.57,
+      "headcount": null,
       "signal": {
         "kind": "receives_award",
         "date": "2026-08-11"
@@ -509,6 +529,7 @@
       "company": "Krea",
       "domain": "krea.ai",
       "fit": 0.56,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": null,
@@ -529,6 +550,7 @@
       "company": "Higgsfield AI",
       "domain": "higgsfield.ai",
       "fit": 0.55,
+      "headcount": null,
       "signal": {
         "kind": "invests_into",
         "date": "2026-09-22"
@@ -552,6 +574,7 @@
       "company": "Flam",
       "domain": "flamapp.ai",
       "fit": 0.51,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": null,
@@ -572,6 +595,7 @@
       "company": "Defense Unicorns",
       "domain": "defenseunicorns.com",
       "fit": 0.5,
+      "headcount": null,
       "signal": {
         "kind": "signs_new_client",
         "date": "2026-09-14"
@@ -595,6 +619,7 @@
       "company": "RudderStack",
       "domain": "rudderstack.com",
       "fit": 0.5,
+      "headcount": null,
       "signal": {
         "kind": "recognized_as",
         "date": "2026-06-22"
@@ -618,6 +643,7 @@
       "company": "Cypress.io",
       "domain": "cypress.io",
       "fit": 0.5,
+      "headcount": null,
       "signal": {
         "kind": "launches",
         "date": "2026-05-20"
@@ -641,6 +667,7 @@
       "company": "Hiver",
       "domain": "hiverhq.com",
       "fit": 0.5,
+      "headcount": null,
       "signal": null,
       "person_found": true,
       "email_provider": null,
@@ -661,6 +688,7 @@
       "company": "Nanonets",
       "domain": "nanonets.com",
       "fit": 0.49,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -681,6 +709,7 @@
       "company": "Gridware",
       "domain": "gridware.io",
       "fit": 0.48,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -701,6 +730,7 @@
       "company": "LoanStreet Inc.",
       "domain": "loan-street.com",
       "fit": 0.48,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -721,6 +751,7 @@
       "company": "Wellfound",
       "domain": "wellfound.com",
       "fit": 0.47,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -741,6 +772,7 @@
       "company": "Roboflow",
       "domain": "roboflow.com",
       "fit": 0.47,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -761,6 +793,7 @@
       "company": "Wizehire",
       "domain": "wizehire.com",
       "fit": 0.44,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -781,6 +814,7 @@
       "company": "Ollama",
       "domain": "ollama.com",
       "fit": 0.43,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -801,6 +835,7 @@
       "company": "Briq",
       "domain": "briq.ai",
       "fit": 0.43,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -821,6 +856,7 @@
       "company": "Stability AI",
       "domain": "stability.ai",
       "fit": 0.41,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -841,6 +877,7 @@
       "company": "Pinecone",
       "domain": "pinecone.io",
       "fit": 0.4,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -861,6 +898,7 @@
       "company": "Paraform",
       "domain": "paraform.com",
       "fit": 0.39,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -881,6 +919,7 @@
       "company": "invideo",
       "domain": "invideo.io",
       "fit": 0.38,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -901,6 +940,7 @@
       "company": "CloudBolt Software",
       "domain": "cloudbolt.io",
       "fit": 0.38,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -921,6 +961,7 @@
       "company": "Zippin",
       "domain": "getzippin.com",
       "fit": 0.34,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -941,6 +982,7 @@
       "company": "Pocket Gems",
       "domain": "pocketgems.com",
       "fit": 0.33,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -961,6 +1003,7 @@
       "company": "Salesken",
       "domain": "salesken.ai",
       "fit": 0.28,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -981,6 +1024,7 @@
       "company": "User Interviews",
       "domain": "userinterviews.com",
       "fit": 0.26,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -1001,6 +1045,7 @@
       "company": "Bravado",
       "domain": "bravado.com",
       "fit": 0.23,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -1021,6 +1066,7 @@
       "company": "Bright Money",
       "domain": "brightmoney.co",
       "fit": 0.19,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -1041,6 +1087,7 @@
       "company": "ELITE ROBOTS",
       "domain": "eliterobots.com",
       "fit": 0.19,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -1061,6 +1108,7 @@
       "company": "EdSurge",
       "domain": "edsurge.com",
       "fit": 0.15,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -1081,6 +1129,7 @@
       "company": "Alibaba Cloud Global",
       "domain": null,
       "fit": 0,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,
@@ -1101,6 +1150,7 @@
       "company": "Bluesky Social",
       "domain": null,
       "fit": 0,
+      "headcount": null,
       "signal": null,
       "person_found": false,
       "email_provider": null,

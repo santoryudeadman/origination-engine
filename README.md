@@ -57,18 +57,18 @@ Same pipeline, different ICP — and the motion changes.
 
 | | mid-market | small teams |
 |---|---|---|
-| profile | 51–200 staff | **under 50 staff** |
+| profile | 51–200 staff | **under 50 staff** (2–48) |
 | buyer | a *function* — marketing / growth | **the founder** |
 | universe built by | a provider run (treg.to) | targeted research (omp) |
-| rows sourced | 50 | 20 |
-| passed the free gates | 27 | 20 |
-| **tier A — contact now** | 6 | **13** |
+| rows sourced | 50 | 30 |
+| passed the free gates | 27 | 30 |
+| **tier A — contact now** | 6 | **14** |
 | enrichment | recorded · $2.33 | not run (needs a data token) |
 
 **The contrast is the point.** When you *buy* a list, the gates do the work — 23 of 50 rows
 never cost a cent. When you *construct* the market, the ICP is already applied, so the gates
-become a safety net and **timing** is the real constraint: 7 of the 20 had no recent reason
-to write. Fit was high across the board; the signal is what separated them.
+become a safety net and **timing** is the real constraint: 16 of the 30 had no fresh reason to
+write. Fit was high across the board (median 0.80); the signal is what separated them.
 
 That is the segment most lists fail at. Directory size filters either exclude it or swallow
 it into `1–200`, and the buying committee is one person who is also the CEO.

@@ -18,13 +18,18 @@
   "gates": [
     { "id": "has_domain", "rule": "primary domain present", "on_fail": "drop",
       "reason": "no primary domain — nothing to enrich against", "before_paid": true },
-    { "id": "size", "rule": "51 <= headcount <= 200", "on_fail": "drop",
+    { "id": "size", "rule": "headcount within thresholds.headcount", "on_fail": "drop",
       "reason": "outside the size band — motion too big or too early", "before_paid": true },
-    { "id": "category", "rule": "is B2B software, not services", "on_fail": "drop",
-      "reason": "services/agency — no product funnel to instrument", "before_paid": true },
     { "id": "icp_fit", "rule": "fit >= icp_fit_pass", "on_fail": "drop",
       "reason": "fit below threshold — recorded, not bought", "before_paid": true }
   ],
+
+  "checks": {
+    "$comment": "Judgement per row, folded into the fit score. If a criterion cannot be a filter, it is a check — and a check runs before any expensive step.",
+    "product_not_services": "is a product company, not a consultancy/agency",
+    "gtm_owner_present": "someone already owns the top of funnel",
+    "activity_12mo": "dated activity in the last 12 months"
+  },
 
   "tiers": {
     "$comment": "Work tier A this week. Tier C gets nothing until a signal moves it.",
