@@ -1,5 +1,7 @@
 # Origination Engine
 
+[![ci](https://github.com/santoryudeadman/origination-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/santoryudeadman/origination-engine/actions/workflows/ci.yml)
+
 **ICP in. Qualified pipeline out.**
 
 A GTM-engineering demo. Turn an ideal-customer-profile into a deduplicated, scored and
@@ -148,6 +150,23 @@ node shadow/evaluate.mjs --universe site/data/run-mid-market.json \
 ```
 
 Needs Node ≥ 18 (built-in `fetch`). No dependencies.
+
+## Verify it
+
+```bash
+node scripts/verify.mjs         # 19 assertions: recorded receipts, gate verdicts, determinism
+node scripts/check-secrets.mjs  # no credentials in the tree
+```
+
+`verify.mjs` runs the real pipeline and the real evaluator, then asserts the numbers they must
+produce. These are **golden assertions, not unit tests** — they defend the two contracts that
+matter: the recorded receipt reproduces, and the promotion gate reaches the same verdict. If a
+refactor silently changes what the pipeline decides, CI fails.
+
+Replay determinism is checked on *decisions*, not timestamps: `generated_at` is metadata and is
+excluded rather than frozen.
+
+Both run in CI on every push, with no install step and no secrets.
 
 **On Attio.** This demo deliberately runs on Attio rather than a legacy CRM, for the same
 reason you would pick one: `PUT /v2/objects/{object}/records?matching_attribute=…` is an
