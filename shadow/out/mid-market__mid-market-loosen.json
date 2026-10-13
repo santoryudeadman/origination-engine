@@ -18,9 +18,14 @@
     "candidate_usd": 2.76,
     "delta_usd": 0.43
   },
-  "lift": null,
-  "verdict": "PROMOTE TO SHADOW",
-  "because": "adds 5 row(s) that no evidence covers yet and costs $0.43 more per run — pay for them only after the labels justify it",
+  "lift": {
+    "baseline_tier_a": 0.3333333333333333,
+    "candidate_tier_a": 0.2857142857142857,
+    "baseline_all": 0.07407407407407407,
+    "candidate_all": 0.0625
+  },
+  "verdict": "HOLD",
+  "because": "tier A win rate falls 33.3% → 28.6% on your labels — the added rows dilute the top tier",
   "left_rows": [],
   "joined_rows": [
     {

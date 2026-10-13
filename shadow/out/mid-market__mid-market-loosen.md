@@ -2,9 +2,9 @@
 
 Universe: `run-mid-market.json` · reference date 2026-09-23
 
-## Verdict: **PROMOTE TO SHADOW**
+## Verdict: **HOLD**
 
-adds 5 row(s) that no evidence covers yet and costs $0.43 more per run — pay for them only after the labels justify it
+tier A win rate falls 33.3% → 28.6% on your labels — the added rows dilute the top tier
 
 | | baseline | candidate |
 |---|---|---|
@@ -14,6 +14,13 @@ adds 5 row(s) that no evidence covers yet and costs $0.43 more per run — pay f
 | tier changes | — | 3 |
 | **deliverables lost** | — | **0** |
 | projected spend | $2.33 | $2.76 |
+
+## Measured lift (from your labels)
+
+| | baseline | candidate |
+|---|---|---|
+| **tier A win rate** | 33.3% | 28.6% |
+| all-rows win rate | 7.4% | 6.3% |
 
 Projected spend is an estimate: $0.0863/row (the recorded run's spend ÷ its working set), applied to each config.
 
@@ -35,4 +42,4 @@ Projected spend is an estimate: $0.0863/row (the recorded run's spend ÷ its wor
 
 - It **can** tell you whether the change is safe: nothing that was producing a deliverable is lost.
 - It **can** tell you what the change costs.
-- It **cannot** tell you the change is *better*. That needs outcome labels (`--labels`); fit is not outcome.
+- It measured lift from the labels you supplied.

@@ -1,0 +1,10 @@
+# Cloudflare Pages — the static site. No build step, no functions, no secrets.
+#
+#   npx wrangler pages deploy site --project-name origination-engine
+#
+# The page replays recorded runs from site/data/*.json. It never holds a credential:
+# every live call happens in the CLI (pipeline/run.mjs), not in the browser.
+
+name = "origination-engine"
+pages_build_output_dir = "site"
+compatibility_date = "2026-10-01"
