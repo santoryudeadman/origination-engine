@@ -230,13 +230,17 @@ reason you would pick one: `PUT /v2/objects/{object}/records?matching_attribute=
 idempotent upsert over a clean objects API, so a recurring pipeline updates instead of
 duplicating — and the same surface is reachable over MCP.
 
-**Provenance, stated plainly.** Attio is the CRM this pipeline is designed around, and the one
-behind the writeback path above. The HubSpot, Salesforce, Lemlist and EmailBison adapters were
-written against the documented APIs for this repo and are verified at the payload level by the test
-suite — they have **not** been run against live accounts. That exercise is what
-[`docs/integration-notes.md`](./docs/integration-notes.md) records, and the notes are the useful
-part: the gotchas are the things a year of production use teaches you slowly, and reading for them
-teaches you in an afternoon.
+**Provenance, stated plainly.** This repository is **portfolio work** — built to work the problem
+end to end, not a record of production deployments. Attio is the CRM it is designed around. The
+HubSpot, Salesforce, Lemlist and EmailBison adapters were written against the documented APIs and are
+verified at the payload level by the test suite; they have **not** been run against live accounts.
+That exercise is what [`docs/integration-notes.md`](./docs/integration-notes.md) records, and the
+notes are the useful part — the gotchas a year of production use teaches you slowly, read for in an
+afternoon.
+
+What *is* from production is the discipline: CI, deterministic replay, spend rails that throw,
+classified retries, a kill switch, dry-run by default. That's platform engineering applied to a
+different domain, and it's the part worth judging.
 
 ---
 
