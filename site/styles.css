@@ -180,7 +180,6 @@ table.leads tr.drop td { opacity: .48; }
 .splits3 article { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
 .splits3 h3 { font-size: 15px; margin: 0 0 8px; font-weight: 600; }
 .splits3 p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.6; }
-.mini { margin: 0; padding: 0 0 0 16px; color: var(--muted); font-size: 13.5px; line-height: 1.9; }
 
 /* ── terminal ──────────────────────────────────────────────────────── */
 .terminal { background: #0c0e11; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; margin-bottom: 18px; }

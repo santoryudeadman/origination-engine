@@ -60,11 +60,11 @@
   .pill { display:inline-block; font-family:var(--mono); font-size:10.5px; padding:2px 9px; border-radius:20px;
           border:1px solid #c2f04d40; background:#c2f04d12; color:var(--accent); margin-left:8px; vertical-align:2px; }
 
-  .grid4 { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
-  @media (max-width:720px){ .grid4{grid-template-columns:1fr} }
-  .grid4 article { background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:20px; }
-  .grid4 h4 { margin:0 0 8px; font-size:15px; font-weight:620; }
-  .grid4 p { margin:0; color:var(--muted); font-size:14px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:860px){ .grid3{grid-template-columns:1fr} }
+  .grid3 article { background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:20px; }
+  .grid3 h4 { margin:0 0 8px; font-size:15px; font-weight:620; }
+  .grid3 p { margin:0; color:var(--muted); font-size:14px; }
   code { font-family:var(--mono); font-size:.88em; color:var(--accent-2); background:#ffffff0a; padding:1px 5px; border-radius:4px; }
 
   .stack { display:flex; flex-wrap:wrap; gap:8px; }
@@ -99,22 +99,19 @@
   <p class="eyebrow">Production engineer · go-to-market systems</p>
   <h1>GTM systems that hold up <span class="dim">as software.</span></h1>
   <p class="lede">
-    I'm a production engineer who builds go-to-market systems. My background is platform and
-    DevOps work — CI/CD, infrastructure, reliability, cost — and that is where the instincts here
-    come from. Most GTM tooling is a dashboard you're supposed to watch. This is the other kind:
-    spend rails that throw instead of graphs you monitor, a kill switch, deterministic replays,
-    classified retries, CI on every push. The habits are production habits; the domain is new.
+    I'm a production engineer who builds go-to-market systems. Most GTM tooling is a dashboard
+    you're supposed to watch; I'd rather ship something that stops itself. The domain is new to
+    me — the discipline isn't.
   </p>
   <div class="row">
     <a class="btn primary" href="https://origination-engine.santoryudeadman.workers.dev" target="_blank" rel="noopener">See it running →</a>
     <a class="btn" href="https://github.com/santoryudeadman/origination-engine" target="_blank" rel="noopener">Source</a>
-    <a class="btn" href="https://github.com/santoryudeadman/origination-engine/actions" target="_blank" rel="noopener">CI</a>
   </div>
 </header>
 
 <section class="wrap" id="work">
   <h2>Selected work</h2>
-  <p class="sub">Two systems, one repository. Both run for real, and both are checked by the same test suite.</p>
+  <p class="sub">Two systems, one repository, checked by the same test suite.</p>
 
   <article class="card">
     <div>
@@ -170,8 +167,8 @@
 
 <section class="wrap" id="approach">
   <h2>How I build</h2>
-  <p class="sub">Four things I'd rather be held to than a feature list.</p>
-  <div class="grid4">
+  <p class="sub">Three things I'd rather be held to than a feature list.</p>
+  <div class="grid3">
     <article>
       <h4>Agents where it's open-ended, code where it repeats</h4>
       <p>Researching an undocumented market needs a model. Enriching 500 rows the same way every
@@ -183,14 +180,9 @@
          workers can't slip through the gap between checking a budget and spending it.</p>
     </article>
     <article>
-      <h4>Measure the change, don't ship the vibes</h4>
-      <p>A change that "feels tighter" is a hypothesis. Replaying it against real rows, and
-         labelling outcomes when you have them, is the only thing that makes it a decision.</p>
-    </article>
-    <article>
-      <h4>If it isn't verifiable, it's marketing</h4>
-      <p>82 assertions over the real pipeline, structural tests for every retry and payload,
-         deterministic replays, and CI on every push. No mocks standing in for the thing itself.</p>
+      <h4>Measured, or it's marketing</h4>
+      <p>A change that "feels tighter" is a hypothesis. Replaying it against real rows is what makes
+         it a decision — and the same discipline gives 82 assertions and CI on every push.</p>
     </article>
   </div>
 </section>
@@ -198,15 +190,11 @@
 <section class="wrap" id="stack">
   <h2>Background</h2>
   <p class="sub">
-    The systems in this repo are <strong>portfolio work</strong> — built to think the problem
-    through end to end, not a record of production deployments. I'd rather say that plainly than
-    let a demo imply something it isn't. What <em>is</em> from production is the discipline: this
-    is written the way I'd write infrastructure, because that's the background I come from.
-    <strong>Attio</strong> is the CRM I've worked in, and the one this pipeline is designed
-    around. The rest of the adapters were a deliberate exercise — I wrote them rather than claim
-    familiarity, and kept notes on what actually bit: HubSpot's <code>domain</code> isn't a unique
-    key, Salesforce can only upsert on a custom External ID field, Lemlist's add-lead creates but
-    never updates, and TitanX is a scoring API rather than a dialer.
+    The systems here are <strong>portfolio work</strong> — built to think the problem through, not a
+    record of production deployments. <strong>Attio</strong> is the CRM I've worked in and the one
+    this pipeline is designed around; the other adapters I wrote rather than claimed, and the
+    <a href="https://github.com/santoryudeadman/origination-engine/blob/main/docs/integration-notes.md" target="_blank" rel="noopener">notes on what actually bit</a>
+    are in the repo.
   </p>
   <div class="split2">
     <div>
@@ -227,15 +215,9 @@
 </section>
 
 <footer class="wrap">
-  <p>
-    Everything here runs on free tiers. The site is served from Cloudflare Workers with no payment
-    method attached — it can't bill by accident. The pipeline's only real cost is the data it buys,
-    and that has a rail.
-  </p>
   <p class="row">
     <a class="btn" href="https://github.com/santoryudeadman" target="_blank" rel="noopener">GitHub</a>
     <a class="btn" href="https://origination-engine.santoryudeadman.workers.dev" target="_blank" rel="noopener">Live demo</a>
-    <a class="btn" href="https://github.com/santoryudeadman/origination-engine/blob/main/docs/integration-notes.md" target="_blank" rel="noopener">Integration notes</a>
   </p>
   <p class="mono">no sends · propose-only · one owner of the stop</p>
 </footer>
