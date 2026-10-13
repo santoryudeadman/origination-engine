@@ -1,0 +1,13 @@
+{
+  "name": "origination-engine-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ICP in, qualified pipeline out. Sources, enriches, verifies, scores, writes to Attio.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "replay": "node run.mjs --replay",
+    "live": "node run.mjs --live",
+    "write": "node run.mjs --live --write"
+  }
+}

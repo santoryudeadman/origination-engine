@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Origination Engine — ICP in, qualified pipeline out</title>
+<meta name="description" content="A GTM engineering demo: turn an ICP into a scored, verified account universe written to Attio. Sourced with treg.to, stored in Attio, launched from omp." />
+<meta property="og:title" content="Origination Engine" />
+<meta property="og:description" content="ICP in. Qualified pipeline out. Market construction for markets you can't download." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top">
+      <span class="brand-mark"></span>
+      Origination Engine
+    </a>
+    <nav class="nav-links">
+      <a href="#console">Console</a>
+      <a href="#writeback">Writeback</a>
+      <a href="#omp">omp</a>
+      <a href="#nonbuild">Non-build</a>
+      <a href="#deploy">Deploy</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ── hero ─────────────────────────────────────────────────────────── -->
+  <section class="hero wrap">
+    <p class="eyebrow">Market construction · account intelligence</p>
+    <h1>ICP in.<br /><span class="dim">Qualified pipeline out.</span></h1>
+    <p class="lede">
+      One motion. Turn an ideal-customer-profile into a deduplicated, scored and
+      verified account universe — written into <strong>Attio</strong>, with a receipt
+      for every row. Data from <strong>treg.to</strong>, launched from <strong>omp</strong>.
+    </p>
+    <div class="hero-actions">
+      <button class="btn primary" data-scroll="#console">Run the pipeline</button>
+      <a class="btn" href="#deploy">Read the repo</a>
+    </div>
+    <ul class="hero-stats" id="hero-stats">
+      <li><b>—</b><span>passed the free gates</span></li>
+      <li><b>—</b><span>verified emails</span></li>
+      <li><b>—</b><span>per deliverable lead</span></li>
+      <li><b>—</b><span>contacts never bought</span></li>
+    </ul>
+  </section>
+
+  <!-- ── the loop ─────────────────────────────────────────────────────── -->
+  <section class="wrap section">
+    <h2 class="h2">The motion, in five steps</h2>
+    <p class="sub">The boring stack, in order. Nothing expensive runs before something cheap has passed.</p>
+    <ol class="loop">
+      <li>
+        <span class="n">01</span>
+        <h3>Compile the ICP</h3>
+        <p>Split the profile into <em>filters</em> a provider can filter on, and <em>checks</em> that run per row.
+           The buyer is a function, not a title.</p>
+        <code>pipeline/icp.md</code>
+      </li>
+      <li>
+        <span class="n">02</span>
+        <h3>Count, then qualify</h3>
+        <p>Free gates first. Rows that fail are recorded, not bought. Every drop carries a reason.</p>
+        <code>pipeline/rules.json</code>
+      </li>
+      <li>
+        <span class="n">03</span>
+        <h3>Find the person</h3>
+        <p>Search the buyer's <em>function</em> — marketing, growth. A "decision makers" list is a map of the
+           company, not your committee.</p>
+        <code>treg.people.search</code>
+      </li>
+      <li>
+        <span class="n">04</span>
+        <h3>Find, then verify the email</h3>
+        <p>A routed waterfall tries providers cheapest-per-hit, misses free. Only a verified-deliverable
+           address enters the sequence.</p>
+        <code>treg.people.email.find</code>
+      </li>
+      <li>
+        <span class="n">05</span>
+        <h3>Write back</h3>
+        <p>Company → person → list entry. Upserted on the domain and the email, so a re-run updates instead
+           of duplicating.</p>
+        <code>pipeline/lib/attio.mjs</code>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ── console ──────────────────────────────────────────────────────── -->
+  <section class="wrap section" id="console">
+    <h2 class="h2">The console</h2>
+    <p class="sub">
+      This is a recorded run, replayed by <code>pipeline/run.mjs</code> with no network and no spend.
+      Move the threshold — it is a number in a file, not a vibe.
+    </p>
+
+    <div class="console">
+      <aside class="controls">
+        <h3>ICP</h3>
+        <dl class="filters">
+          <div><dt>country</dt><dd>US</dd></div>
+          <div><dt>headcount</dt><dd>51–200</dd></div>
+          <div><dt>category</dt><dd>B2B software</dd></div>
+          <div><dt>buyer function</dt><dd>marketing / growth</dd></div>
+          <div><dt>exclusions</dt><dd>services, pre-product, in-CRM</dd></div>
+        </dl>
+
+        <label class="slider">
+          <span>fit threshold <output id="thr-out">0.50</output></span>
+          <input id="thr" type="range" min="0.30" max="0.80" step="0.01" value="0.50" />
+        </label>
+        <p class="hint" id="thr-hint"></p>
+
+        <div class="seg" id="tier-filter" role="group" aria-label="filter by tier">
+          <button class="on" data-tier="all">All</button>
+          <button data-tier="A">A</button>
+          <button data-tier="B">B</button>
+          <button data-tier="C">C</button>
+          <button data-tier="drop">Dropped</button>
+        </div>
+
+        <button class="btn primary wide" id="run">Run the pipeline</button>
+        <p class="hint mono" id="kill">kill switch: shadow · propose-only · no sends</p>
+      </aside>
+
+      <div class="panel">
+        <ol class="stages" id="stages">
+          <li data-stage="source"><i></i><span>source</span><em>—</em></li>
+          <li data-stage="qualify"><i></i><span>qualify</span><em>—</em></li>
+          <li data-stage="people"><i></i><span>find people</span><em>—</em></li>
+          <li data-stage="email"><i></i><span>find + verify email</span><em>—</em></li>
+          <li data-stage="write"><i></i><span>write to Attio</span><em>—</em></li>
+        </ol>
+
+        <div class="receipt" id="receipt"></div>
+
+        <div class="table-wrap">
+          <table class="leads" id="leads">
+            <thead>
+              <tr>
+                <th>Company</th><th>Domain</th><th class="num">Fit</th>
+                <th>Gate</th><th>Tier</th><th>Signal</th><th>Email</th><th>Verify</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="hint" id="table-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── writeback ────────────────────────────────────────────────────── -->
+  <section class="wrap section" id="writeback">
+    <h2 class="h2">Writeback is the product</h2>
+    <p class="sub">
+      Slack is the interface; the CRM stays the database. This pipeline never touches Slack — it writes
+      the records a human reviews. Upserts, matched on the unique attribute, so the second run updates.
+    </p>
+    <div class="split">
+      <div class="code-card">
+        <header>PUT /v2/objects/companies/records?matching_attribute=domains</header>
+        <pre id="wm-company"></pre>
+      </div>
+      <div class="code-card">
+        <header>PUT /v2/objects/people/records?matching_attribute=email_addresses</header>
+        <pre id="wm-person"></pre>
+      </div>
+    </div>
+    <p class="hint">
+      Order matters: the company exists before the person references it — a record-reference cannot create
+      its target. Attribution rides along: source list, signal, provider, verdict.
+    </p>
+  </section>
+
+  <!-- ── omp ──────────────────────────────────────────────────────────── -->
+  <section class="wrap section" id="omp">
+    <h2 class="h2">Launched from an ICP</h2>
+    <p class="sub">
+      You do not hand-build this per market. You type the ICP and the harness fans out — research,
+      provider contracts, build, verify — then the pipeline is a file you can re-run next week.
+    </p>
+    <div class="terminal">
+      <div class="term-bar"><i></i><i></i><i></i><span>omp</span></div>
+      <pre><span class="p">›</span> build me an origination pipeline for <span class="s">"US B2B software, 51–200 staff,</span>
+<span class="s">  buyer is marketing or growth"</span>. Use Attio. Use treg for data.
+<span class="s">  Show me the receipt, and tell me what not to automate.</span>
+
+<span class="c">├─</span> scout   Apero interview   → <span class="ok">stack, doctrine, metrics, vocabulary</span>
+<span class="c">├─</span> scout   treg contracts    → <span class="ok">4 routed tools, prices, verify verdicts</span>
+<span class="c">├─</span> scout   Attio API         → <span class="ok">upsert keys, list entries, scopes, ordering</span>
+<span class="c">└─</span> build   compile ICP → gates → people → verify → Attio writeback
+      <span class="ok">✓ receipt reproduced: 27 passed · 20 deliverable · $0.1165/lead</span></pre>
+    </div>
+    <div class="splits3">
+      <article><h3>The ICP is the prompt</h3><p><code>icp.md</code> is the artifact. Edit the filters and the
+        checks; the pipeline re-compiles. No hard-coded lists.</p></article>
+      <article><h3>Rules, not vibes</h3><p>Thresholds, spend caps and the owner of the stop live in
+        <code>rules.json</code>. Every drop has a reason to point at.</p></article>
+      <article><h3>Transfer, not a retainer</h3><p>Repo, runbook and a named owner. Your team runs the motion
+        without us — which is the point.</p></article>
+    </div>
+  </section>
+
+  <!-- ── non-build ────────────────────────────────────────────────────── -->
+  <section class="wrap section" id="nonbuild">
+    <h2 class="h2">What we deliberately did not automate</h2>
+    <p class="sub">Restraint is the differentiator. A workflow that shouldn't exist is a cost, not a feature.</p>
+    <ul class="nonbuild">
+      <li><b>No sending.</b> This pipeline proposes; a person approves. Nothing leaves the building from here —
+        drafts-only, with a confidence gate downstream.</li>
+      <li><b>No buying the whole list.</b> 21 of 48 rows were dropped on a free check. Enriching all of them
+        would have cost roughly <span class="mono">$4.12</span>; we spent <span class="mono">$2.33</span>.</li>
+      <li><b>No "decision makers" endpoint.</b> One such call returned 45 senior people and no marketing —
+        the buyer wasn't in the room. Search the function instead.</li>
+      <li><b>No second email provider by default.</b> The routed waterfall already bills misses at $0.00 on
+        per-success providers; a hand-rolled second call is just a second bill.</li>
+    </ul>
+  </section>
+
+  <!-- ── metrics ──────────────────────────────────────────────────────── -->
+  <section class="wrap section" id="metrics">
+    <h2 class="h2">The metric stack</h2>
+    <p class="sub">Health, then performance, then efficiency. Activity is not on the list.</p>
+    <div class="splits3">
+      <article>
+        <h4>System health</h4>
+        <ul class="mini">
+          <li>counts agree per stage</li>
+          <li>enrichment fill rate</li>
+          <li>share deliverable</li>
+          <li>raw responses stored</li>
+        </ul>
+      </article>
+      <article>
+        <h4>Performance</h4>
+        <ul class="mini">
+          <li>replies by source, signal, tier</li>
+          <li>meetings held</li>
+          <li>opportunities created</li>
+          <li>time to first touch</li>
+        </ul>
+      </article>
+      <article>
+        <h4>Efficiency</h4>
+        <ul class="mini">
+          <li>cost per usable result</li>
+          <li>share dropped before paying</li>
+          <li>spend against the cap</li>
+          <li>rows per human hour</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ── deploy ───────────────────────────────────────────────────────── -->
+  <section class="wrap section" id="deploy">
+    <h2 class="h2">Run it</h2>
+    <p class="sub">The site is static. The pipeline is one file with no dependencies.</p>
+    <div class="split">
+      <div class="code-card">
+        <header>replay — no keys, no spend</header>
+        <pre>git clone &lt;repo&gt; &amp;&amp; cd origination-engine
+node pipeline/run.mjs --replay
+<span class="c"># → 27 passed · 20 deliverable · $0.1165/lead</span>
+npx serve site        <span class="c"># or: python3 -m http.server -d site</span></pre>
+      </div>
+      <div class="code-card">
+        <header>live — your keys</header>
+        <pre>cp .env.example .env   <span class="c"># TREG_TOKEN, ATTIO_TOKEN</span>
+node pipeline/run.mjs --live             <span class="c"># source + enrich</span>
+node pipeline/run.mjs --live --write     <span class="c"># + Attio writeback</span></pre>
+      </div>
+    </div>
+    <div class="split">
+      <div class="code-card">
+        <header>tree</header>
+        <pre>pipeline/
+  icp.md            <span class="c">the ICP artifact</span>
+  rules.json        <span class="c">thresholds · gates · spend · owner</span>
+  run.mjs           <span class="c">the motion</span>
+  lib/treg.mjs      <span class="c">data layer, metered</span>
+  lib/attio.mjs     <span class="c">writeback, upserts</span>
+  lib/score.mjs     <span class="c">gates + tiers, deterministic</span>
+site/               <span class="c">this page (static)</span>
+skills/             <span class="c">the omp skill</span></pre>
+      </div>
+      <div class="code-card">
+        <header>deploy</header>
+        <pre><span class="c"># Cloudflare Pages</span>
+npx wrangler pages deploy site
+
+<span class="c"># Vercel</span>
+npx vercel deploy site --prod
+
+<span class="c"># GitHub Pages: push site/ to gh-pages</span>
+git subtree push --prefix site origin gh-pages</pre>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p>
+    <b>Origination Engine</b> — a GTM engineering demo. Method drawn from
+    <a href="https://aperoadvisors.com/blog/how-to-build-a-network-mining-tool" target="_blank" rel="noopener">Apero Advisors' published work</a>
+    and the <a href="https://treg.to/gtm-engineering" target="_blank" rel="noopener">treg.to GTM engineering playbook</a>.
+    Replay data is treg.to's <a href="https://github.com/superdesigndev/treg" target="_blank" rel="noopener">published run</a> (23 Sep 2026).
+  </p>
+  <p class="mono">no sends · propose-only · one owner of the stop</p>
+</footer>
+
+<script src="app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "$comment": "What the agent may do, and who can stop it. Every threshold is a number, every drop has a reason, one person owns the stop.",
+  "run": {
+    "name": "us-b2b-software-51-200",
+    "icp": "./icp.md",
+    "owner_of_stop": "@ravadd",
+    "mode": "shadow",
+    "reference_date": "2026-09-23"
+  },
+
+  "thresholds": {
+    "icp_fit_pass": 0.5,
+    "headcount": [51, 200]
+  },
+
+  "gates": [
+    { "id": "has_domain", "rule": "primary domain present", "on_fail": "drop",
+      "reason": "no primary domain — nothing to enrich against", "before_paid": true },
+    { "id": "size", "rule": "51 <= headcount <= 200", "on_fail": "drop",
+      "reason": "outside the size band — motion too big or too early", "before_paid": true },
+    { "id": "category", "rule": "is B2B software, not services", "on_fail": "drop",
+      "reason": "services/agency — no product funnel to instrument", "before_paid": true },
+    { "id": "icp_fit", "rule": "fit >= icp_fit_pass", "on_fail": "drop",
+      "reason": "fit below threshold — recorded, not bought", "before_paid": true }
+  ],
+
+  "tiers": {
+    "$comment": "Work tier A this week. Tier C gets nothing until a signal moves it.",
+    "A": { "min_fit": 0.6, "requires_fresh_signal_days": 90, "rule": "fit >= 0.60 AND a signal within 90 days" },
+    "B": { "min_fit": 0.6, "rule": "fit >= 0.60, or a fresh signal" },
+    "C": { "min_fit": 0.0, "rule": "qualified, keep warm — nothing until a signal moves it" }
+  },
+
+  "spend": {
+    "cap_per_run_usd": 5.0,
+    "cap_per_usable_lead_usd": 0.25,
+    "qualify_before_enrich": true
+  },
+
+  "paid_steps": [
+    "people.search",
+    "people.email.find",
+    "people.email.verify",
+    "companies.enrich"
+  ],
+
+  "writeback": {
+    "crm": "attio",
+    "objects": ["companies", "people"],
+    "list": "Origination — {run.name}",
+    "attribution_required": ["source_list", "signal", "email_provider", "verify_verdict"]
+  },
+
+  "safety": {
+    "kill_switch": true,
+    "human_gate": "keep_skip",
+    "autonomy": "shadow"
+  }
+}
