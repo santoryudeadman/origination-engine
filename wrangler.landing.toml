@@ -1,0 +1,13 @@
+# The portfolio landing page — its own Worker, so the index and the demo have separate URLs.
+#
+#   npx wrangler deploy --config wrangler.landing.toml
+#
+# Static assets only. Free plan: 100k requests/day, no payment method attached, so the
+# ceiling returns errors rather than an invoice.
+
+name = "portfolio"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[assets]
+directory = "./landing"

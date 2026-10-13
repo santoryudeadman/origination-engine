@@ -5,6 +5,7 @@
 **ICP in. Qualified pipeline out.**
 
 **Live:** https://origination-engine.santoryudeadman.workers.dev
+**Index:** https://portfolio.santoryudeadman.workers.dev
 
 A GTM engineering system built the way software should be: **deterministic** where the work has
 to repeat, **agentic** where the work is open-ended, and **verifiable** end to end. It turns an
@@ -25,7 +26,7 @@ Data layer **treg.to** · agentic authoring **omp** · **zero dependencies**.
 | **Reproducibility** | Every run replays from a config file. Same inputs → same decisions. |
 | **Cost as an invariant** | Per-run *and* per-day spend caps enforced in code, not watched on a dashboard. |
 | **Measurement** | A shadow-evaluation rig that decides whether a change is safe to promote. |
-| **Verifiability** | 55 assertions over the real pipeline and the real evaluator, plus stubbed-I/O tests for retries and CRM payloads. |
+| **Verifiability** | 82 assertions over the real pipeline and the real evaluator, plus stubbed-I/O tests for retries, CRM payloads and the dialer queue. |
 | **Resilience** | Bounded concurrency, classified retries, idempotent replays, no charge for a failure. |
 | **Agentic, deliberately** | Agents do the open-ended research; plain code does the repeatable pipeline. |
 | **CI** | Runs on every push with no install step and no secrets. |
@@ -176,7 +177,7 @@ Needs Node ≥ 18 (built-in `fetch`). No dependencies.
 ## Verify it
 
 ```bash
-node scripts/verify.mjs         # 55 assertions: receipts, gate verdicts, determinism, rails, retries, CRM payloads
+node scripts/verify.mjs         # 82 assertions: receipts, gate verdicts, determinism, rails, retries, CRM + sequencer payloads, dialer queue
 node scripts/check-secrets.mjs  # no credentials in the tree
 ```
 
@@ -219,9 +220,9 @@ ledger *before* spending and settles the difference afterwards, so a burst canno
 gap between checking the budget and spending it. A failed call is charged nothing, so its
 reservation returns in full.
 
-Nineteen of the 43 assertions cover the retry state machine, the concurrency cap, and reservation
-arithmetic — driven by stubbed I/O. Retry logic that moves money should not be verified by hoping a
-provider misbehaves.
+The retry state machine, the concurrency cap, reservation arithmetic, every CRM and sequencer
+payload, and the dialer's calling windows are all driven by stubbed I/O. Logic that moves money —
+or dials a stranger's phone — should not be verified by hoping a provider misbehaves.
 
 **On Attio.** This demo deliberately runs on Attio rather than a legacy CRM, for the same
 reason you would pick one: `PUT /v2/objects/{object}/records?matching_attribute=…` is an

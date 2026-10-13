@@ -36,7 +36,7 @@ verifiable system into a plausible-looking demo.
 ## Before you claim something works
 
 ```bash
-node scripts/verify.mjs         # 43 assertions over the real pipeline and evaluator
+node scripts/verify.mjs         # 82 assertions over the real pipeline and evaluator
 node scripts/check-secrets.mjs
 ```
 

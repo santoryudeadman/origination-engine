@@ -259,6 +259,113 @@ try {
       sf.requests[1].body.Account, { External_Id__c: 'acme.com' });
     check('salesforce never sends a null LastName', typeof sf.requests[1].body.LastName, 'string');
   }
+
+  // ── the sequencer port: the first irreversible step gets its own guards ───
+  console.log('\nsequencers — the handoff');
+
+  {
+    const { createSequencer, knownSequencers } = await import('../pipeline/lib/sequence/index.mjs');
+
+    check('the port knows two sequencers', knownSequencers(), ['emailbison', 'lemlist']);
+
+    const resp = (status, body) => ({ ok: status >= 200 && status < 300, status, text: async () => JSON.stringify(body) });
+
+    // Lemlist does not expose the base URL in the request log, so assert on the path we built.
+    const ll = createSequencer('lemlist', { dryRun: true });
+    const enrolled = await ll.enroll({ campaignId: 'cam_1', lead: { email: 'a@b.co', firstName: 'A', company: 'B' } });
+    check('lemlist enrols through the campaign path', ll.requests[0].url.endsWith('/campaigns/cam_1/leads/?updateStrategy=fillEmptyOnly'), true);
+    check('lemlist uses the documented camelCase body', ll.requests[0].body.companyName, 'B');
+    check('lemlist reports the enrolment', enrolled.enrolled, true);
+
+    let refusedNoEmail = false;
+    try { await ll.enroll({ campaignId: 'cam_1', lead: {} }); } catch { refusedNoEmail = true; }
+    check('lemlist refuses a lead with no email', refusedNoEmail, true);
+
+    let refusedNoCampaign = false;
+    try { await ll.enroll({ lead: { email: 'a@b.co' } }); } catch { refusedNoCampaign = true; }
+    check('lemlist refuses to enrol without a destination', refusedNoCampaign, true);
+
+    // The behaviour that matters: add-lead CREATES ONLY. A second run is not a failure.
+    const dup = createSequencer('lemlist', {
+      dryRun: false, token: 'x',
+      fetchImpl: async () => resp(400, { code: 'LEAD_ALREADY_IN_CAMPAIGN', message: 'lead already in campaign' }),
+    });
+    const second = await dup.enroll({ campaignId: 'cam_1', lead: { email: 'a@b.co' } });
+    check('lemlist treats "already enrolled" as a no-op, not an error', second, { enrolled: false, skipped: 'already-enrolled' });
+
+    const eb = createSequencer('emailbison', { dryRun: true });
+    await eb.enroll({ campaignId: '9', lead: { email: 'x@y.co', fullName: 'Jane Doe' } });
+    check('emailbison derives the required last name', eb.requests[0].body.last_name, 'Doe');
+    check('emailbison creates then attaches', eb.requests[1].url.endsWith('/campaigns/9/leads/attach-leads'), true);
+    check('emailbison attaches the created lead id', eb.requests[1].body.lead_ids.length, 1);
+
+    let needsInstance = false;
+    try { createSequencer('emailbison', { dryRun: false }); } catch { needsInstance = true; }
+    check('emailbison refuses to run live without its instance host', needsInstance, true);
+  }
+
+  // ── the dialer queue: the primitives no vendor gives you ─────────────────
+  console.log('\ndialer — the queue');
+
+  {
+    const { plan, runQueue, isWithinWindow, nextRetry, DISPOSITIONS } = await import('../pipeline/lib/dialer/queue.mjs');
+    const HOURS = { start: 8, end: 18, days: [1, 2, 3, 4, 5] };
+
+    // 2026-10-13T14:00Z = 10:00 in New York (EDT) on a weekday.
+    const weekday = new Date('2026-10-13T14:00:00Z');
+    check('a weekday morning is inside the window', isWithinWindow(weekday, 'America/New_York', HOURS), true);
+    check('the window is per-contact, not per-server', isWithinWindow(weekday, 'Asia/Tokyo', HOURS), false); // 23:00 there
+    check('late local evening is outside the window',
+      isWithinWindow(new Date('2026-10-14T02:00:00Z'), 'America/New_York', HOURS), false); // 22:00 Tue
+    check('the weekend is outside the window',
+      isWithinWindow(new Date('2026-10-17T14:00:00Z'), 'America/New_York', HOURS), false);
+
+    const contacts = [
+      { email: 'a@x.co' },
+      { email: 'b@x.co' },
+      { email: 'c@x.co', time_zone: 'Asia/Tokyo' },
+      { email: 'd@x.co', do_not_contact: true },
+    ];
+    const p = plan(contacts, { now: weekday, window: HOURS, timeZone: 'America/New_York' });
+    check('in-window contacts are dialable', p.dialable.map((c) => c.email), ['a@x.co', 'b@x.co']);
+    check('DNC and out-of-window are deferred with a reason', p.deferred.map((d) => d.reason).sort(), ['dnc', 'outside-window']);
+    check('the daily attempt cap defers',
+      plan([{ email: 'a@x.co' }], { now: weekday, attemptsToday: () => 3, maxAttemptsPerDay: 3 }).deferred[0].reason, 'attempt-cap-today');
+    check('the total attempt cap defers',
+      plan([{ email: 'a@x.co' }], { now: weekday, attemptsTotal: () => 6, maxAttempts: 6 }).deferred[0].reason, 'attempt-cap-total');
+
+    // Dispositions are not interchangeable: a voicemail and a bad number are different events.
+    check('a connected call is terminal', DISPOSITIONS.connected.terminal, true);
+    check('a bad number never retries', nextRetry('bad_number', weekday), null);
+    check('voicemail retries tomorrow', nextRetry('voicemail', weekday).toISOString(), '2026-10-14T14:00:00.000Z');
+    check('busy retries sooner than voicemail',
+      nextRetry('busy', weekday) < nextRetry('voicemail', weekday), true);
+
+    let inFlight = 0;
+    let peak = 0;
+    const dialled = Array.from({ length: 6 }, (_, i) => ({ email: `u${i}@x.co` }));
+    const out = await runQueue(dialled, {
+      now: weekday, window: HOURS, concurrency: 2, timeZone: 'America/New_York',
+      dial: async (c) => {
+        inFlight += 1; peak = Math.max(peak, inFlight);
+        await new Promise((r) => setTimeout(r, 3));
+        inFlight -= 1;
+        return c.email === 'u1@x.co' ? 'voicemail' : 'connected';
+      },
+    });
+    check('the dialer caps concurrent lines', peak <= 2, true);
+    check('dispositions are tallied', out.byDisposition, { connected: 5, voicemail: 1 });
+
+    const thrown = await runQueue([{ email: 't@x.co' }], {
+      now: weekday, window: HOURS, timeZone: 'America/New_York',
+      dial: async () => { throw new Error('SIP 503'); },
+    });
+    check('a transport failure is recorded, never treated as an answer', thrown.byDisposition, { failed: 1 });
+
+    let needsTransport = false;
+    try { await runQueue([], { now: weekday }); } catch { needsTransport = true; }
+    check('the queue refuses to run without a transport', needsTransport, true);
+  }
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }

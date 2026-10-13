@@ -6,12 +6,12 @@ A one-page answer to "have you actually used these", with a file to click for ea
 |---|---|---|
 | **Cursor** | ✅ | `.cursor/rules/project.mdc` + `AGENTS.md` — repo instructions any agent reads. Project was built through agents end to end. |
 | **Clay** | ✅ *as code* | `pipeline/lib/treg.mjs`. Same model Clay sells: a **waterfall** across providers, cheapest-per-hit first, **misses free** on per-success providers, with a **credit ledger**. The difference is that it is a file you can `git diff`, not a table you click. |
-| **SWE fundamentals** | ✅ | Bounded concurrency (`lib/pool.mjs`), classified retries, `Idempotency-Key` reuse, atomic budget reservation, a clean-cutover port, **55 assertions in CI**. |
+| **SWE fundamentals** | ✅ | Bounded concurrency (`lib/pool.mjs`), classified retries, `Idempotency-Key` reuse, atomic budget reservation, clean-cutover ports, **82 assertions in CI**. |
 | **HubSpot / Salesforce** | ✅ | `pipeline/lib/crm/` — one port, three vendors. See the sharp edges below. |
 | **Vercel** | ✅ | `vercel.json`. Same static site also ships on Cloudflare Workers. |
-| **EmailBison / Lemlist** | ⏳ next | API contracts researched and recorded; adapters pending. |
-| **Dialers — Nooks** | ⏳ next | Nooks has a real Sequencing API (`partner-api.nooks.in/v1`) and a signed `call.logged` webhook carrying `disposition` + `callOutcome`. |
-| **Dialers — TitanX** | ⏳ next | See the correction below. |
+| **EmailBison / Lemlist** | ✅ | `pipeline/lib/sequence/` — one port, two sequencers, plus `pipeline/enroll.mjs` as the explicit hand-off step. |
+| **Dialers — Nooks** | ✅ *(queue)* | `pipeline/lib/dialer/queue.mjs` — disposition state machine, per-contact calling windows, attempt caps, DNC, concurrency. The transport is injected, so swapping dialers doesn't touch the queue. |
+| **Dialers — TitanX** | ✅ *(correction)* | TitanX is **not a dialer** — see below. |
 | **What makes a sales team's life easier** | ✅ | Human gates everywhere: keep/skip, the promotion gate, propose-only writes, and a documented *non-build*. |
 
 ## The sharp edges, because this is the actual interview
@@ -43,12 +43,20 @@ scoring and enrichment** surface: `POST /contacts/score`, `POST /contacts/enrich
 has **no** disposition, concurrency, retry, calling-window or DNC API — the customer's dialer owns
 all of that. Keys also require a Team subscription, Team Admin only.
 
+**Lemlist's add-lead creates only.** It never updates. Re-running an enrolment returns
+`400 LEAD_ALREADY_IN_CAMPAIGN`, so a naive integration reports an error every second run. Treat
+"already there" as a no-op with a reason. Separately, EmailBison takes a **per-instance** base URL
+(you host it), requires a last name, and needs *two* calls to enrol — create the lead, then attach
+lead ids to the campaign. Attaching to an active campaign takes ~5 minutes to sync, so it is not a
+place to poll for a result.
+
 **A dialer adapter's real primitives are none of those four vendors' APIs.** Whatever dialer you
 run, the adapter has to model: simultaneous dials in flight, a disposition state machine
 (`queued → dialing → ringing → connected → dispositioned`) with terminal vs retryable outcomes,
 per-disposition retry caps, IANA timezone + local calling windows, attempt caps, org-wide DNC
-checked *before* every dial, and an at-least-once CRM writeback keyed on a stable call id. Nooks
-gives you the disposition half; the queue is yours.
+checked *before* every dial, and an at-least-once writeback keyed on a stable call id. Nooks
+gives you the disposition half; the queue is yours. `pipeline/lib/dialer/queue.mjs` is that queue,
+with the telephony transport injected.
 
 ## How the repo is put together
 
