@@ -6,10 +6,11 @@ const BASE = process.env.TREG_BASE || 'https://treg.to';
 export class SpendCapExceeded extends Error {}
 
 export class Treg {
-  constructor({ token = process.env.TREG_TOKEN, capPerRunUsd = 5, maxCostPerCallUsd = 1 } = {}) {
+  constructor({ token = process.env.TREG_TOKEN, capPerRunUsd = 5, maxCostPerCallUsd = 1, budget = null } = {}) {
     this.token = token;
     this.capUsd = capPerRunUsd;
     this.maxCostPerCallUsd = maxCostPerCallUsd;
+    this.budget = budget; // optional daily ledger; see lib/budget.mjs
     this.spentMicro = 0;
     this.log = []; // the receipt
   }
@@ -27,11 +28,23 @@ export class Treg {
       throw new SpendCapExceeded(`run cap $${this.capUsd} reached at $${this.spentUsd.toFixed(4)}`);
     }
 
+    const callCeilingUsd = Math.min(this.maxCostPerCallUsd, this.remainingUsd);
+
+    // Daily rail. Reserve the call's ceiling BEFORE spending, so a run cannot cross the
+    // day's budget at all — not just discover it afterwards.
+    if (this.budget && this.budget.wouldExceed(Math.round(callCeilingUsd * 1e6))) {
+      const s = this.budget.snapshot();
+      throw new SpendCapExceeded(
+        `daily budget reached: $${(s.spent_micro / 1e6).toFixed(4)} of $${(s.cap_micro / 1e6).toFixed(2)} on ${s.day}. `
+        + `Raise rules.spend.cap_per_day_usd (or ${'ORIGINATION_CAP_PER_DAY_USD'}) deliberately.`,
+      );
+    }
+
     const h = {
       'X-Treg-Token': this.token,
       'Content-Type': 'application/json',
       // Hard ceiling for this call. Refusal is a 402 and nothing is charged.
-      'X-Treg-Route-Max-Cost': String(Math.min(this.maxCostPerCallUsd, this.remainingUsd)),
+      'X-Treg-Route-Max-Cost': String(callCeilingUsd),
       ...headers,
     };
     if (verify) h['X-Treg-Route-Verify'] = 'true';
@@ -47,6 +60,7 @@ export class Treg {
     const callId = res.headers.get('x-treg-call-id') || null;
     const servedBy = res.headers.get('x-treg-served-by') || null;
     this.spentMicro += costMicro;
+    this.budget?.addMicro(costMicro);
     this.log.push({ endpoint, call_id: callId, served_by: servedBy, cost_micro: costMicro, status: res.status });
 
     const text = await res.text();

@@ -1,5 +1,42 @@
 # Stack & hosting
 
+## Status
+
+Deployed on **Cloudflare Workers** (static assets): `origination-engine.santoryudeadman.workers.dev`
+
+```bash
+npx wrangler deploy          # wrangler.toml → [assets] directory = "./site"
+```
+
+The page replays recorded runs from `site/data/*.json`. It holds **no credential** — every live
+call happens in the CLI, never in the browser.
+
+---
+
+## Cost rails
+
+Money can leave in exactly four places. Three are enforced in code; one is enforced by the platform.
+
+| Rail | Where it lives | Enforced by | Behaviour |
+|---|---|---|---|
+| **Per-run cap** | `rules.spend.cap_per_run_usd` | `pipeline/lib/treg.mjs` | throws `SpendCapExceeded` before the call |
+| **Per-day cap** | `rules.spend.cap_per_day_usd` | `pipeline/lib/budget.mjs` | daily ledger on disk; reserves *before* spending, so a scheduled job cannot re-spend the day |
+| **Per-call ceiling** | `X-Treg-Route-Max-Cost` | treg.to | 402 refusal, nothing charged |
+| **Qualify before enrich** | `rules.spend.qualify_before_enrich` | gate order | 23 of 50 rows never cost anything |
+
+Override the daily cap for one run: `ORIGINATION_CAP_PER_DAY_USD=1.00 node pipeline/run.mjs --live`.
+
+**Model spend in the pipeline: `$0`.** There is no model in the runtime — scoring is
+deterministic by design. `omp` is an authoring and research tool, bounded with `--max-time`, and
+never sits in the request path.
+
+**Hosting: `$0` and unbillable.** Workers Free has no payment method attached, so the 100,000
+requests/day ceiling returns errors rather than an invoice. That hard stop *is* the rail — not a
+limit you have to monitor. `compatibility_date` is pinned in `wrangler.toml` so a runtime change
+cannot silently alter behaviour.
+
+---
+
 ## The stack
 
 | Layer | Choice | Why |
@@ -19,12 +56,15 @@ Total dependency count: **0**. Nothing here needs `npm install`.
 
 | Host | What you deploy | Free tier | Verdict |
 |---|---|---|---|
-| **Cloudflare Pages** | `site/` | Unlimited requests + bandwidth on static assets | ✅ best static home |
+| **Cloudflare Workers** (static assets) | `site/` via `wrangler deploy` | 100k requests/day, hard-capped and unbillable | ✅ **deployed** — see Status |
+| **Cloudflare Pages** | `site/` | Unlimited requests + bandwidth on static assets | ✅ works, but wrangler 4 now delegates Pages to Workers |
 | **GitHub Pages** | `site/` | Free for public repos | ✅ fine, no server logic |
 | **Vercel** | `site/` | Hobby, static deploys free | ⚠️ see the licensing trap below |
 
-The demo page is static, so all three work today. The difference only matters when you add
-the **scheduled pipeline** — which is the next project.
+The page is static, so any of these work. The difference matters when you add the **scheduled
+pipeline** — which is why Workers is the right home: the same account and the same deploy
+already carry the cron, Queues and D1 that the next project needs.
+
 
 ---
 

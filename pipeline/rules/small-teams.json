@@ -40,6 +40,7 @@
 
   "spend": {
     "cap_per_run_usd": 5.0,
+    "cap_per_day_usd": 5.0,
     "cap_per_usable_lead_usd": 0.25,
     "qualify_before_enrich": true
   },

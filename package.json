@@ -1,0 +1,17 @@
+{
+  "name": "origination-engine",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ICP in, qualified pipeline out — deterministic where it repeats, agentic where it is open-ended, verifiable end to end.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "verify": "node scripts/verify.mjs",
+    "secrets": "node scripts/check-secrets.mjs",
+    "replay": "node pipeline/run.mjs --replay",
+    "live": "node pipeline/run.mjs --live",
+    "shadow": "node shadow/evaluate.mjs",
+    "serve": "npx --yes serve site",
+    "deploy": "npx --yes wrangler deploy"
+  }
+}

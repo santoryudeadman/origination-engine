@@ -17,6 +17,7 @@ import { parseCsvObjects } from './lib/csv.mjs';
 import { gate, fit, tier, timing, deliverable } from './lib/score.mjs';
 import { Treg } from './lib/treg.mjs';
 import { Attio } from './lib/attio.mjs';
+import { fileBudget } from './lib/budget.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -124,7 +125,19 @@ function readSource(rules) {
 }
 
 async function sourceLive(rules, args, log) {
-  const treg = new Treg({ capPerRunUsd: rules.spend.cap_per_run_usd });
+  // Two rails, both enforced in code: a per-run cap and a daily ledger on disk so a
+  // scheduled job cannot re-spend the day's budget on every tick.
+  const budget = fileBudget({
+    path: join(ROOT, '.origination/spend.json'),
+    capPerDayUsd: Number(
+      process.env.ORIGINATION_CAP_PER_DAY_USD
+      ?? rules.spend.cap_per_day_usd
+      ?? rules.spend.cap_per_run_usd,
+    ),
+  });
+  log(`budget   ${usd(budget.spentMicro())} of $${(budget.capMicro / 1e6).toFixed(2)} spent today`);
+
+  const treg = new Treg({ capPerRunUsd: rules.spend.cap_per_run_usd, budget });
   const icp = readFileSync(join(HERE, rules.run.icp), 'utf8');
   const industry = /software|SaaS/i.test(icp) ? 'software' : undefined;
   const size = rules.thresholds.headcount;

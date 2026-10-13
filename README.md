@@ -4,9 +4,24 @@
 
 **ICP in. Qualified pipeline out.**
 
-A GTM-engineering demo. Turn an ideal-customer-profile into a deduplicated, scored and
-verified account universe — written into **Attio**, with a receipt for every row.
-Data from **treg.to**, launched from **omp**.
+A GTM engineering system built the way software should be: **deterministic** where the work has
+to repeat, **agentic** where the work is open-ended, and **verifiable** end to end. It turns an
+ideal-customer-profile into a deduplicated, scored, verified account universe in **Attio** — with
+a receipt for every row, a spend rail on every call, and a gate that refuses to ship a config
+change that loses a working lead.
+
+Data layer **treg.to** · agentic authoring **omp** · **zero dependencies**.
+
+### What it demonstrates
+
+| | |
+|---|---|
+| **Reproducibility** | Every run replays from a config file. Same inputs → same decisions. |
+| **Cost as an invariant** | Per-run *and* per-day spend caps enforced in code, not watched on a dashboard. |
+| **Measurement** | A shadow-evaluation rig that decides whether a change is safe to promote. |
+| **Verifiability** | 24 golden assertions over the real pipeline and the real evaluator. No mocks, no fixtures. |
+| **Agentic, deliberately** | Agents do the open-ended research; plain code does the repeatable pipeline. |
+| **CI** | Runs on every push with no install step and no secrets. |
 
 ```
 repo/
@@ -154,7 +169,7 @@ Needs Node ≥ 18 (built-in `fetch`). No dependencies.
 ## Verify it
 
 ```bash
-node scripts/verify.mjs         # 19 assertions: recorded receipts, gate verdicts, determinism
+node scripts/verify.mjs         # 24 assertions: receipts, gate verdicts, determinism, spend rails
 node scripts/check-secrets.mjs  # no credentials in the tree
 ```
 

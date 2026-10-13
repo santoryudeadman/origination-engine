@@ -1,6 +1,9 @@
 # secrets — never commit
 .env
 
+# local spend ledger (daily budget rail)
+.origination/
+
 # os / editor
 .DS_Store
 node_modules/

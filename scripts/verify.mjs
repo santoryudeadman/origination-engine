@@ -14,6 +14,9 @@ import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { fileBudget } from '../pipeline/lib/budget.mjs';
+import { Treg, SpendCapExceeded } from '../pipeline/lib/treg.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 let passed = 0;
@@ -88,6 +91,28 @@ try {
   run('shadow/evaluate.mjs', evalArgs('mid-market-loosen', ['--labels', labels]));
   check('loosen with labels → HOLD', verdictOf('mid-market-loosen'), 'HOLD');
   rmSync(labels, { force: true });
+
+  // ── rails: the spend guards refuse BEFORE money moves ─────────────────────
+  console.log('\nrails — spend guards');
+
+  let perRunRefused = false;
+  try { await new Treg({ token: 'x', capPerRunUsd: 0 }).call('treg.companies.enrich', { domain: 'example.com' }); }
+  catch (e) { perRunRefused = e instanceof SpendCapExceeded; }
+  check('per-run cap refuses before spending', perRunRefused, true);
+
+  let dailyRefused = false;
+  try {
+    await new Treg({ token: 'x', budget: fileBudget({ path: join(tmp, 'tight.json'), capPerDayUsd: 0.000001 }) })
+      .call('treg.companies.enrich', { domain: 'example.com' });
+  } catch (e) { dailyRefused = e instanceof SpendCapExceeded; }
+  check('daily rail refuses before spending', dailyRefused, true);
+
+  const ledgerPath = join(tmp, 'spend.json');
+  const ledger = fileBudget({ path: ledgerPath, capPerDayUsd: 5 });
+  ledger.addMicro(2_330_000);
+  check('daily rail allows spend within budget', ledger.wouldExceed(1_000_000), false);   // $2.33 + $1 < $5
+  check('daily rail blocks spend beyond budget', ledger.wouldExceed(3_000_000), true);    // $2.33 + $3 > $5
+  check('daily ledger reloads from disk', fileBudget({ path: ledgerPath, capPerDayUsd: 5 }).spentMicro(), 2_330_000);
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }

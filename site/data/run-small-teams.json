@@ -2,10 +2,10 @@
   "meta": {
     "icp": "small-teams",
     "run": "us-small-teams-under-50",
-    "generated_at": "2026-10-13T19:17:14.588Z",
+    "generated_at": "2026-10-13T19:29:46.012Z",
     "reference_date": "2026-10-13",
     "icp_sha256": "c7ba90ac8d1c",
-    "rules_sha256": "5b24e3e4a476",
+    "rules_sha256": "ac320661477e",
     "owner_of_stop": "@ravadd",
     "autonomy": "shadow",
     "thresholds": {
