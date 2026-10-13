@@ -265,11 +265,15 @@ Restraint is the differentiator. A workflow that shouldn't exist is a cost, not 
 
 - **No sending.** The pipeline proposes; a person approves. Adding a send step silently is
   a bug, not a feature.
-- **No buying the whole list.** 21 of 48 rows dropped on a free check.
+- **No buying the whole list.** 23 of 50 rows dropped on a free check — 21 below the fit
+  threshold, 2 with no domain at all.
 - **No "decision makers" endpoint.** On the recorded run it returned 45 senior people and
   no marketing at all.
 - **No hand-rolled second email provider.** The routed waterfall already bills misses at
   $0.00 on per-success providers; a second call is just a second bill.
+- **No automatic enrolment.** Putting contacts into a sequencer is the first irreversible step in
+  the system, so it is a separate command (`pipeline/enroll.mjs`) with its own flag, its own dry run
+  and its own receipt — never a stage inside `run.mjs`.
 
 ---
 
