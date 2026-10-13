@@ -18,6 +18,7 @@ import { gate, fit, tier, timing, deliverable } from './lib/score.mjs';
 import { Treg } from './lib/treg.mjs';
 import { Attio } from './lib/attio.mjs';
 import { fileBudget } from './lib/budget.mjs';
+import { mapPool } from './lib/pool.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -170,12 +171,18 @@ async function sourceLive(rules, args, log) {
 async function enrich(leads, rules, treg, log) {
   if (!treg) return leads;
   const title = /under 50|small teams/i.test(readFileSync(join(HERE, rules.run.icp), 'utf8')) ? 'founder' : 'marketing';
-  for (const lead of leads) {
-    if (lead.gate !== 'pass' || !lead.domain) continue;
+
+  const targets = leads.filter((l) => l.gate === 'pass' && l.domain);
+  const concurrency = rules.spend.concurrency ?? 5;
+  log(`enrich   ${targets.length} rows, ${concurrency} in flight`);
+
+  let done = 0;
+  await mapPool(targets, concurrency, async (lead) => {
     try {
       const p = await treg.peopleSearch({ companyDomain: lead.domain, title, country: 'US', limit: 5 });
       const person = (p.output?.people ?? [])[0];
-      if (!person) { log(`  no ${title} at ${lead.domain}`); continue; }
+      if (!person) { log(`  no ${title} at ${lead.domain}`); done += 1; return; }
+
       lead.person_found = true;
       lead.person_name = person.full_name || [person.first_name, person.last_name].filter(Boolean).join(' ');
       lead.person_title = person.title;
@@ -188,8 +195,16 @@ async function enrich(leads, rules, treg, log) {
       lead.email_provider = e._treg?.served_by ?? null;
       lead.verify = e._treg?.verification?.verdict ?? e.output?.status ?? null;
       lead.deliverable = lead.verify === 'valid';
-    } catch (err) { log(`  ${lead.domain}: ${err.message}`); }
-  }
+    } catch (err) {
+      // One bad row must not take the run down — it is recorded and the pool moves on.
+      log(`  ${lead.domain}: ${err.message}`);
+    } finally {
+      done += 1;
+      if (done % 10 === 0) log(`         ${done}/${targets.length}`);
+    }
+  });
+
+  log(`enrich   ${done}/${targets.length} rows attempted`);
   return leads;
 }
 
@@ -245,7 +260,11 @@ function receipt(leads, rules, treg) {
     spend_usd: Number((spendMicro / 1e6).toFixed(4)),
     cost_per_deliverable_usd: deliverableRows.length ? Number((spendMicro / 1e6 / deliverableRows.length).toFixed(4)) : null,
     cap_per_run_usd: rules.spend.cap_per_run_usd,
+    cap_per_day_usd: rules.spend.cap_per_day_usd ?? null,
+    concurrency: rules.spend.concurrency ?? 5,
     treg_calls: treg ? treg.log.length : 0,
+    treg_retries: treg ? treg.receipt().retries : 0,
+    treg_failures: treg ? treg.receipt().failures : 0,
   };
 }
 

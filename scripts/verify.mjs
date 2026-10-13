@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 import { fileBudget } from '../pipeline/lib/budget.mjs';
 import { Treg, SpendCapExceeded } from '../pipeline/lib/treg.mjs';
+import { mapPool } from '../pipeline/lib/pool.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -113,6 +114,105 @@ try {
   check('daily rail allows spend within budget', ledger.wouldExceed(1_000_000), false);   // $2.33 + $1 < $5
   check('daily rail blocks spend beyond budget', ledger.wouldExceed(3_000_000), true);    // $2.33 + $3 > $5
   check('daily ledger reloads from disk', fileBudget({ path: ledgerPath, capPerDayUsd: 5 }).spentMicro(), 2_330_000);
+
+  // ── resilience: retries, idempotency, concurrency ─────────────────────────
+  // The retry state machine drives real money, so it is tested against stubbed I/O
+  // rather than left to a live provider's mood.
+  console.log('\nresilience — retries, idempotency, concurrency');
+
+  const res = (status, body = {}, headers = {}) => ({
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: (k) => headers[k.toLowerCase()] ?? null },
+    text: async () => JSON.stringify(body),
+  });
+  const stub = (script) => {
+    const calls = [];
+    return {
+      calls,
+      impl: async (url, init) => {
+        calls.push({ url, headers: init.headers });
+        const step = script[Math.min(calls.length - 1, script.length - 1)];
+        return step();
+      },
+    };
+  };
+  const key = (c) => c.headers['Idempotency-Key'];
+  const quiet = { sleep: async () => {}, backoffBaseMs: 0 };
+
+  {
+    const s = stub([
+      () => res(429, { detail: { error: 'share_busy', retry_after_s: 2 } }),   // provider capping calls in progress
+      () => res(200, { output: { email: 'a@b.co' } }, { 'x-treg-cost-micro': '4834', 'x-treg-call-id': 'c1' }),
+    ]);
+    const t = new Treg({ token: 'x', fetchImpl: s.impl, ...quiet });
+    const out = await t.call('treg.people.email.find', { domain: 'b.co' });
+    check('429 is retried', s.calls.length, 2);
+    check('a retry reuses the idempotency key', key(s.calls[0]) === key(s.calls[1]), true);
+    check('a retry returns the answer', out.output.email, 'a@b.co');
+    check('a retried call is billed once', t.spentMicro, 4834);
+    check('the receipt counts the retry', t.receipt().retries, 1);
+  }
+
+  {
+    const s = stub([() => res(500, {}), () => res(200, { output: 1 }, { 'x-treg-cost-micro': '100' })]);
+    const t = new Treg({ token: 'x', fetchImpl: s.impl, ...quiet });
+    await t.call('treg.companies.enrich', { domain: 'a.com' });
+    check('5xx is retried', s.calls.length, 2);
+    check('5xx retry reuses the key', key(s.calls[0]) === key(s.calls[1]), true);
+  }
+
+  {
+    const s = stub([() => res(400, { detail: { error: 'bad_param' } })]);
+    const t = new Treg({ token: 'x', fetchImpl: s.impl, ...quiet });
+    let err = null;
+    try { await t.call('treg.people.search', {}); } catch (e) { err = e; }
+    check('4xx is NOT retried (it is our bug)', s.calls.length, 1);
+    check('4xx surfaces the provider error', err?.detail?.error, 'bad_param');
+    check('4xx is charged nothing', t.spentMicro, 0);
+  }
+
+  {
+    const s = stub([() => res(410, { detail: { error: 'idempotency_response_lost' } })]);
+    const t = new Treg({ token: 'x', fetchImpl: s.impl, ...quiet });
+    let err = null;
+    try { await t.call('treg.people.search', {}); } catch (e) { err = e; }
+    check('410 is not retried with the same key', s.calls.length, 1);
+    check('410 exposes the idempotency key for audit', typeof err?.idempotency_key, 'string');
+  }
+
+  {
+    const s = stub([() => res(503, { treg_saturated: true }, { 'retry-after': '1' })]);
+    const t = new Treg({ token: 'x', fetchImpl: s.impl, maxRetries: 2, ...quiet });
+    let err = null;
+    try { await t.call('treg.people.search', {}); } catch (e) { err = e; }
+    check('retries stop at maxRetries', s.calls.length, 3);
+    check('exhausted retries report the attempt count', err?.attempts, 3);
+  }
+
+  {
+    // Concurrency is the backpressure: never more than `limit` in flight, order preserved.
+    let inFlight = 0;
+    let peak = 0;
+    const out = await mapPool(Array.from({ length: 20 }, (_, i) => i), 4, async (i) => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      await new Promise((r) => setTimeout(r, 4));
+      inFlight -= 1;
+      return i * 2;
+    });
+    check('mapPool caps concurrency', peak <= 4, true);
+    check('mapPool runs concurrently', peak > 1, true);
+    check('mapPool preserves input order', [out[0], out[19]], [0, 38]);
+  }
+
+  {
+    // Under concurrency the reservation must be atomic, or a burst overshoots the day's budget.
+    const b = fileBudget({ path: join(tmp, 'conc.json'), capPerDayUsd: 1 });
+    check('reservations are atomic', [b.reserve(600_000), b.reserve(600_000)], [true, false]);
+    b.settle(600_000, 4_834);
+    check('settlement refunds the unused reservation', b.spentMicro(), 4_834);
+  }
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }

@@ -21,7 +21,8 @@ Data layer **treg.to** · agentic authoring **omp** · **zero dependencies**.
 | **Reproducibility** | Every run replays from a config file. Same inputs → same decisions. |
 | **Cost as an invariant** | Per-run *and* per-day spend caps enforced in code, not watched on a dashboard. |
 | **Measurement** | A shadow-evaluation rig that decides whether a change is safe to promote. |
-| **Verifiability** | 24 golden assertions over the real pipeline and the real evaluator. No mocks, no fixtures. |
+| **Verifiability** | 43 assertions over the real pipeline and the real evaluator, plus stubbed-I/O tests for the retry path. |
+| **Resilience** | Bounded concurrency, classified retries, idempotent replays, no charge for a failure. |
 | **Agentic, deliberately** | Agents do the open-ended research; plain code does the repeatable pipeline. |
 | **CI** | Runs on every push with no install step and no secrets. |
 
@@ -171,7 +172,7 @@ Needs Node ≥ 18 (built-in `fetch`). No dependencies.
 ## Verify it
 
 ```bash
-node scripts/verify.mjs         # 24 assertions: receipts, gate verdicts, determinism, spend rails
+node scripts/verify.mjs         # 43 assertions: receipts, gate verdicts, determinism, spend rails, retries
 node scripts/check-secrets.mjs  # no credentials in the tree
 ```
 
@@ -184,6 +185,39 @@ Replay determinism is checked on *decisions*, not timestamps: `generated_at` is 
 excluded rather than frozen.
 
 Both run in CI on every push, with no install step and no secrets.
+
+## Resilience
+
+The paid steps are I/O bound and metered, so they run several at a time, and every failure has a
+defined response rather than a blanket `catch`.
+
+**Bounded concurrency.** `rules.spend.concurrency` workers, no more. The in-flight count is the
+backpressure — no unbounded promise fan-out.
+
+**Retries are classified, not blanket:**
+
+| Response | Action | Why |
+|---|---|---|
+| `429 share_busy`, `409` | retry, honouring `retry_after_s` | the provider is capping concurrency; nothing was billed |
+| `5xx`, `503 treg_saturated` | retry, exponential backoff + jitter | treg's own weather |
+| network error | retry | never billed |
+| **`4xx`** | **fail immediately** | it is our parameters. Retrying burns money across providers for one mistake |
+| `402 route_max_cost` | fail | budget refusal, nothing charged |
+| `410` | fail, surfacing the key and call id | the call completed and was charged; the same key cannot help |
+| `502 response_buffer_limit` | fail | oversized now, oversized later |
+
+**One idempotency key per logical call, reused across retries.** A call that reached the provider
+and lost its answer on the way back is replayed from storage and charged nothing. A replay reports
+`X-Treg-Cost-Micro: 0`, so summing attempt costs never double-bills.
+
+**Reservation is atomic.** Under concurrency each worker reserves its per-call ceiling in the daily
+ledger *before* spending and settles the difference afterwards, so a burst cannot slip through the
+gap between checking the budget and spending it. A failed call is charged nothing, so its
+reservation returns in full.
+
+Nineteen of the 43 assertions cover the retry state machine, the concurrency cap, and reservation
+arithmetic — driven by stubbed I/O. Retry logic that moves money should not be verified by hoping a
+provider misbehaves.
 
 **On Attio.** This demo deliberately runs on Attio rather than a legacy CRM, for the same
 reason you would pick one: `PUT /v2/objects/{object}/records?matching_attribute=…` is an

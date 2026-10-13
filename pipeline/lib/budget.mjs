@@ -21,28 +21,53 @@ export function fileBudget({ path, capPerDayUsd }) {
   }
   const capMicro = Math.round(capPerDayUsd * 1e6);
 
-  return {
+  const persist = () => {
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, JSON.stringify(data, null, 2));
+  };
+
+  const budget = {
     kind: 'file',
     path,
     capMicro,
 
     spentMicro() { return data[day()] ?? 0; },
 
-    /** Reserve BEFORE the call: refuse if today's spend plus the call's ceiling would exceed the cap. */
     wouldExceed(projectedMicro) {
-      return this.spentMicro() + projectedMicro > capMicro;
+      return budget.spentMicro() + projectedMicro > capMicro;
     },
 
-    /** Settle AFTER the call, using the provider's actual charge. */
+    /**
+     * Reserve BEFORE the call. Synchronous, therefore atomic: with N concurrent workers each
+     * reserves its ceiling before any of them settles, so a burst cannot cross the day's budget.
+     */
+    reserve(projectedMicro) {
+      if (budget.wouldExceed(projectedMicro)) return false;
+      data[day()] = (data[day()] ?? 0) + projectedMicro;
+      persist();
+      return true;
+    },
+
+    /** Settle AFTER the call: refund the difference between the reserved ceiling and the real charge. */
+    settle(reservedMicro, actualMicro) {
+      const delta = (actualMicro ?? 0) - reservedMicro;
+      if (delta) {
+        data[day()] = (data[day()] ?? 0) + delta;
+        persist();
+      }
+    },
+
+    /** For callers that already know the final number. */
     addMicro(n) {
       if (!n) return;
       data[day()] = (data[day()] ?? 0) + n;
-      mkdirSync(dirname(path), { recursive: true });
-      writeFileSync(path, JSON.stringify(data, null, 2));
+      persist();
     },
 
     snapshot() {
-      return { day: day(), spent_micro: this.spentMicro(), cap_micro: capMicro, path };
+      return { day: day(), spent_micro: budget.spentMicro(), cap_micro: capMicro, path };
     },
   };
+
+  return budget;
 }

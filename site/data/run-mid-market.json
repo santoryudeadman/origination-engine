@@ -2,10 +2,10 @@
   "meta": {
     "icp": "mid-market",
     "run": "us-b2b-software-51-200",
-    "generated_at": "2026-10-13T19:29:46.123Z",
+    "generated_at": "2026-10-13T19:35:23.679Z",
     "reference_date": "2026-09-23",
     "icp_sha256": "7cf6f75a3dfb",
-    "rules_sha256": "be8faaad2f6c",
+    "rules_sha256": "0ef1ad8709b8",
     "owner_of_stop": "@ravadd",
     "autonomy": "shadow",
     "thresholds": {
@@ -57,7 +57,11 @@
     "spend_usd": 2.33,
     "cost_per_deliverable_usd": 0.1165,
     "cap_per_run_usd": 5,
-    "treg_calls": 0
+    "cap_per_day_usd": 5,
+    "concurrency": 5,
+    "treg_calls": 0,
+    "treg_retries": 0,
+    "treg_failures": 0
   },
   "leads": [
     {

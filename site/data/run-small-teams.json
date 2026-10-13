@@ -2,10 +2,10 @@
   "meta": {
     "icp": "small-teams",
     "run": "us-small-teams-under-50",
-    "generated_at": "2026-10-13T19:29:46.012Z",
+    "generated_at": "2026-10-13T19:35:23.512Z",
     "reference_date": "2026-10-13",
     "icp_sha256": "c7ba90ac8d1c",
-    "rules_sha256": "ac320661477e",
+    "rules_sha256": "1225feca7c1c",
     "owner_of_stop": "@ravadd",
     "autonomy": "shadow",
     "thresholds": {
@@ -57,7 +57,11 @@
     "spend_usd": 0,
     "cost_per_deliverable_usd": null,
     "cap_per_run_usd": 5,
-    "treg_calls": 0
+    "cap_per_day_usd": 5,
+    "concurrency": 5,
+    "treg_calls": 0,
+    "treg_retries": 0,
+    "treg_failures": 0
   },
   "leads": [
     {
