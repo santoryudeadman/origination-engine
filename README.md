@@ -15,9 +15,10 @@ change that loses a working lead.
 
 Data layer **treg.to** · agentic authoring **omp** · **zero dependencies**.
 
-> **Come from a job spec?** [`docs/stack-map.md`](./docs/stack-map.md) maps Cursor, Clay, HubSpot,
-> Salesforce, Vercel and dialers to the exact file that implements each — including the three ways
-> this integration is normally written wrong.
+> **Wiring these APIs up?** [`docs/integration-notes.md`](./docs/integration-notes.md) — the parts
+> that actually bite: HubSpot's `domain` isn't a unique key, Salesforce can only upsert on a custom
+> External ID field, Lemlist's add-lead creates but never updates, and TitanX is a scoring API, not
+> a dialer.
 
 ### What it demonstrates
 
