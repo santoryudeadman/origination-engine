@@ -1,13 +1,23 @@
-# The portfolio landing page — its own Worker, so the index and the demo have separate URLs.
+# The portfolio index — a Worker serving static assets, plus a tiny hit log.
 #
 #   npx wrangler deploy --config wrangler.landing.toml
+#   npx wrangler secret put HITS_TOKEN --config wrangler.landing.toml
 #
-# Static assets only. Free plan: 100k requests/day, no payment method attached, so the
-# ceiling returns errors rather than an invoice.
+# All free tier: static asset requests are unmetered, and the KV namespace is well inside
+# the 1k writes/day allowance at portfolio traffic. No payment method on the account, so
+# the ceiling errors rather than billing.
+#
+# Send per-recipient links as /r/<slug> to see whether a specific person opened it.
 
 name = "portfolio"
+main = "landing-worker/index.js"
 compatibility_date = "2026-10-01"
 workers_dev = true
 
 [assets]
 directory = "./landing"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "HITS"
+id = "de0fadfa6d374cdd87dfbd227e662466"

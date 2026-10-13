@@ -222,5 +222,21 @@
   <p class="mono">no sends · propose-only · one owner of the stop</p>
 </footer>
 
+<script>
+  // Records that a real browser rendered this page. Scanners fetch HTML; they do not run
+  // JavaScript. No cookies, no identifiers — a timestamp, a viewport size and a timezone.
+  (function () {
+    var m = /^\/r\/([a-z0-9._-]+)$/i.exec(location.pathname);
+    var body = JSON.stringify({
+      slug: m ? m[1].toLowerCase() : null,
+      w: window.innerWidth,
+      tz: (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || null,
+    });
+    try {
+      if (navigator.sendBeacon) navigator.sendBeacon('/beacon', body);
+      else fetch('/beacon', { method: 'POST', body: body, keepalive: true });
+    } catch (e) { /* never let analytics break the page */ }
+  })();
+</script>
 </body>
 </html>

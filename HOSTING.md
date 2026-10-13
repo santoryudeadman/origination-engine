@@ -13,6 +13,77 @@ call happens in the CLI, never in the browser.
 
 ---
 
+## Did they actually look?
+
+The portfolio Worker logs every request, and separates three events of increasing strength:
+
+| Event | What it means |
+|---|---|
+| `document` | The HTML was fetched. **Could be a robot.** Mail scanners and Slack unfurls do this. |
+| `asset` | A sub-resource (CSS/JS/data) was fetched. Something rendered it. |
+| `beacon` | JavaScript ran on the page. Scanners don't execute JS. **This is a person.** |
+
+That distinction is the whole point. A single hit seconds after you send is almost always an email
+security scanner, not a reader. A **`beacon`** means a real browser had the page open.
+
+### Sending a tagged link
+
+```bash
+node scripts/link.mjs acme northwind globex
+# acme      https://portfolio.santoryudeadman.workers.dev/r/acme
+# northwind https://portfolio.santoryudeadman.workers.dev/r/northwind
+```
+
+The page served is identical — only the URL differs — so the slug never leaks into the content.
+
+### Reading the log
+
+```bash
+curl "https://portfolio.santoryudeadman.workers.dev/hits?token=$HITS_TOKEN"
+```
+
+```json
+{
+  "slug": "acme",
+  "first_seen": "2026-10-13T22:29:38Z",
+  "last_seen": "2026-10-13T22:29:39Z",
+  "page_views": 1, "asset_requests": 0, "js_beacons": 1,
+  "verdict": "rendered-in-a-browser",
+  "distinct_user_agents": 1,
+  "countries": ["US"]
+}
+```
+
+How to read the verdicts:
+
+- **`touched-only`** — probably a scanner. Don't count it.
+- **`loaded-assets`** — something rendered the HTML.
+- **`rendered-in-a-browser`** — a person had it open.
+- **`distinct_user_agents > 1`** — usually a scanner *plus* the actual person.
+
+### Operations
+
+`HITS_TOKEN` is a Worker secret — set it, never commit it:
+
+```bash
+printf '%s' "$(node -e 'console.log(require("crypto").randomBytes(18).toString("hex"))')" \
+  | npx wrangler secret put HITS_TOKEN --config wrangler.landing.toml
+```
+
+Hits live in the `HITS` KV namespace with a 120-day TTL. Free tier allows 1,000 writes/day — a
+portfolio will not approach that. **No cookies, no IP addresses stored**: a timestamp, a user
+agent, a country, a viewport size and a timezone.
+
+⚠️ Hits are logged, not guaranteed. KV is eventually consistent, so a very recent visit may take a
+few seconds to appear.
+
+> **Worth saying out loud:** there is no such thing as a read receipt. Anyone who tells you they
+> can confirm *a specific person* read a page is selling something. This tells you a link was
+> opened by something that runs JavaScript, from a country, at a time. That's the honest ceiling.
+
+---
+
+
 ## Cost rails
 
 Money can leave in exactly four places. Three are enforced in code; one is enforced by the platform.
