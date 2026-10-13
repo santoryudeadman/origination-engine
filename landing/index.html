@@ -70,6 +70,10 @@
   .stack { display:flex; flex-wrap:wrap; gap:8px; }
   .stack span { font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line-2);
                 border-radius:6px; padding:5px 11px; }
+  .split2 { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:720px){ .split2 { grid-template-columns:1fr; gap:20px; } }
+  .split2 h4 { margin:0 0 12px; font-family:var(--mono); font-size:11px; letter-spacing:.12em;
+               text-transform:uppercase; color:var(--faint); font-weight:500; }
   footer { padding:44px 0 70px; border-top:1px solid var(--line); color:var(--faint); font-size:13.5px; }
   footer p { margin:0 0 12px; max-width:80ch; }
   .mono { font-family:var(--mono); font-size:12.5px; }
@@ -192,15 +196,29 @@
 
 <section class="wrap" id="stack">
   <h2>Working with</h2>
-  <p class="sub">The tools, and the parts of them that actually bite — HubSpot's <code>domain</code> isn't a
-     unique key, Salesforce can only upsert on a custom External ID field, and TitanX is a scoring API,
-     not a dialer.</p>
-  <div class="stack">
-    <span>Node</span><span>TypeScript-ready JS</span><span>Attio</span><span>HubSpot</span>
-    <span>Salesforce</span><span>treg.to</span><span>Clay-shaped waterfalls</span>
-    <span>Lemlist</span><span>EmailBison</span><span>Nooks</span>
-    <span>Cloudflare Workers</span><span>Vercel</span><span>GitHub Actions</span>
-    <span>Cursor</span><span>omp</span>
+  <p class="sub">
+    Production experience is <strong>Attio</strong> — that is where I've built for real, and it is the
+    CRM this pipeline is designed around. When a stack I hadn't shipped against came up, I wrote the
+    adapters rather than claim familiarity I didn't have, and kept notes on what actually bit. Those
+    notes are worth more than a résumé line: HubSpot's <code>domain</code> isn't a unique key,
+    Salesforce can only upsert on a custom External ID field, Lemlist's add-lead creates but never
+    updates, and TitanX is a scoring API rather than a dialer.
+  </p>
+  <div class="split2">
+    <div>
+      <h4>In production</h4>
+      <div class="stack">
+        <span>Attio</span><span>Node</span><span>Cloudflare Workers</span>
+        <span>GitHub Actions</span><span>Cursor</span><span>TypeScript-ready JS</span>
+      </div>
+    </div>
+    <div>
+      <h4>Built and verified here</h4>
+      <div class="stack">
+        <span>HubSpot</span><span>Salesforce</span><span>Lemlist</span>
+        <span>EmailBison</span><span>Nooks-shaped dialer queue</span><span>treg.to</span>
+      </div>
+    </div>
   </div>
 </section>
 

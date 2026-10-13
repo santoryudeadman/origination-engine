@@ -230,6 +230,14 @@ reason you would pick one: `PUT /v2/objects/{object}/records?matching_attribute=
 idempotent upsert over a clean objects API, so a recurring pipeline updates instead of
 duplicating — and the same surface is reachable over MCP.
 
+**Provenance, stated plainly.** Attio is the CRM this pipeline is designed around, and the one
+behind the writeback path above. The HubSpot, Salesforce, Lemlist and EmailBison adapters were
+written against the documented APIs for this repo and are verified at the payload level by the test
+suite — they have **not** been run against live accounts. That exercise is what
+[`docs/integration-notes.md`](./docs/integration-notes.md) records, and the notes are the useful
+part: the gotchas are the things a year of production use teaches you slowly, and reading for them
+teaches you in an afternoon.
+
 ---
 
 ## The ICP artifact
