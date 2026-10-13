@@ -1,0 +1,30 @@
+---
+description: Origination Engine — invariants for this repo
+alwaysApply: true
+---
+
+# Origination Engine
+
+Full instructions live in `AGENTS.md`. The short version, because these are the ones that get
+broken:
+
+- **`pipeline/lib/score.mjs` is pure.** No model calls, no clock, no network. Gates and tiers must
+  be reproducible from a row and a rules file.
+- **Never fabricate data.** Every row in `site/data/` is real and sourced. Test fixtures are
+  generated into a temp dir at runtime, never committed.
+- **Dry-run by default.** New adapters print the request they would send; `--write` is opt-in and
+  refuses to run without a token.
+- **Paid steps respect the rails.** Per-run cap, per-day ledger, per-call ceiling. Reserve before
+  spending; settle after.
+- **Retries are classified.** `429`/`409`/`5xx`/network retry; `4xx` never (it is our bug). One
+  `Idempotency-Key` per logical call, reused across attempts.
+- **The pipeline never sends.** It proposes. Human gate stays.
+
+Before claiming a change works:
+
+```bash
+node scripts/verify.mjs
+node scripts/check-secrets.mjs
+```
+
+If behaviour changes, move the assertion count and update the number quoted in `README.md`.

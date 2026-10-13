@@ -192,13 +192,14 @@ async function run() {
   btn.textContent = 'Running…';
 
   const t = tally(state.run.leads);
+  const wb = state.run.writeback;
   const enrichRun = state.run.receipt.enrichment !== 'not_run';
   const steps = [
     ['source', `${t.rows.length} rows`],
     ['qualify', `${t.passed} pass / ${t.dropped} drop`],
     ['people', enrichRun ? `${t.named} named` : 'not run'],
     ['email', enrichRun ? `${t.emails} found` : 'not run'],
-    ['write', enrichRun ? `${t.deliverable} upserted` : 'pending'],
+    ['write', wb ? `${wb.written} written / ${wb.eligible} eligible` : 'pending'],
   ];
 
   for (const li of $$('.stages li')) { li.classList.remove('done', 'run'); li.querySelector('em').textContent = '—'; }

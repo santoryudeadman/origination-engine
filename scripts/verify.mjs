@@ -213,6 +213,52 @@ try {
     b.settle(600_000, 4_834);
     check('settlement refunds the unused reservation', b.spentMicro(), 4_834);
   }
+
+  // ── the CRM port: one interface, three vendors ────────────────────────────
+  console.log('\ncrm — the writeback port');
+
+  {
+    const { createCrm, knownCrms } = await import('../pipeline/lib/crm/index.mjs');
+
+    check('the port knows three vendors', knownCrms(), ['attio', 'hubspot', 'salesforce']);
+
+    let refused = false;
+    try { createCrm('pipedrive'); } catch { refused = true; }
+    check('an unknown vendor is refused', refused, true);
+
+    const attio = createCrm('attio', { dryRun: true });
+    const hub = createCrm('hubspot', { dryRun: true });
+    const sf = createCrm('salesforce', { dryRun: true });
+
+    check('supportsLists is per-vendor', [attio.supportsLists, hub.supportsLists, sf.supportsLists], [true, true, false]);
+
+    // An address is the unique key in every CRM here. Writing a person without one would
+    // produce a malformed record, so every adapter must refuse rather than emit it.
+    const refusedNoEmail = [];
+    for (const [name, c] of [['attio', attio], ['hubspot', hub], ['salesforce', sf]]) {
+      try { await c.upsertPerson({ companyDomain: 'acme.com' }); } catch { refusedNoEmail.push(name); }
+    }
+    check('every adapter refuses a person with no email', refusedNoEmail, ['attio', 'hubspot', 'salesforce']);
+
+    // HubSpot: idempotency lives in a per-input idProperty on the batch endpoint.
+    await hub.upsertCompany({ domain: 'acme.com', name: 'Acme' });
+    await hub.upsertPerson({ email: 'jane@acme.com', firstName: 'Jane', lastName: 'Doe', companyDomain: 'acme.com' });
+    check('hubspot keys a company on domain', hub.requests[0].body.inputs[0].idProperty, 'domain');
+    check('hubspot keys a person on email', hub.requests[1].body.inputs[0].idProperty, 'email');
+    check('hubspot batches rather than upserting singly', hub.requests[0].url.endsWith('/crm/v3/objects/companies/batch/upsert'), true);
+    check('hubspot creates a MANUAL list', (await hub.ensureList({ name: 'X' }), hub.requests.at(-1).body.processingType), 'MANUAL');
+
+    // Salesforce: idempotency lives in the URL, and linking is a nested external-id reference.
+    await sf.upsertCompany({ domain: 'acme.com', name: 'Acme' });
+    await sf.upsertPerson({ email: 'jane@acme.com', lastName: 'Doe', companyDomain: 'acme.com' });
+    check('salesforce upserts by external id in the URL',
+      sf.requests[0].url.endsWith('/sobjects/Account/External_Id__c/acme.com'), true);
+    check('salesforce upserts a contact by external id',
+      sf.requests[1].url.endsWith('/sobjects/Contact/External_Id__c/jane%40acme.com'), true);
+    check('salesforce links by nested external id',
+      sf.requests[1].body.Account, { External_Id__c: 'acme.com' });
+    check('salesforce never sends a null LastName', typeof sf.requests[1].body.LastName, 'string');
+  }
 } finally {
   rmSync(tmp, { recursive: true, force: true });
 }

@@ -16,7 +16,7 @@ import { createHash } from 'node:crypto';
 import { parseCsvObjects } from './lib/csv.mjs';
 import { gate, fit, tier, timing, deliverable } from './lib/score.mjs';
 import { Treg } from './lib/treg.mjs';
-import { Attio } from './lib/attio.mjs';
+import { createCrm, knownCrms } from './lib/crm/index.mjs';
 import { fileBudget } from './lib/budget.mjs';
 import { mapPool } from './lib/pool.mjs';
 
@@ -43,6 +43,7 @@ function parseArgs(argv) {
     else if (t === '--write') a.write = true;
     else if (t === '--list') a.list = true;
     else if (t === '--icp') a.icp = argv[++i];
+    else if (t === '--crm') a.crm = argv[++i];
     else if (t === '--limit') a.limit = Number(argv[++i]);
     else if (t === '--out') a.out = resolve(argv[++i]);
   }
@@ -208,21 +209,48 @@ async function enrich(leads, rules, treg, log) {
   return leads;
 }
 
-async function writeback(leads, rules, attio, log) {
+/**
+ * Writeback. Writeback is the product.
+ * The pipeline does not know which CRM it is talking to — that is the whole point of the port.
+ */
+async function writeback(leads, rules, crm, log) {
   const listName = rules.writeback.list.replace('{run.name}', rules.run.name);
-  const listId = await attio.createList({ name: listName, apiSlug: slug(listName) });
-  log(`attio: list "${listName}" → ${listId}`);
+
+  let listId = null;
+  if (crm.supportsLists) {
+    listId = await crm.ensureList({ name: listName, slug: slug(listName), parentObject: 'companies' });
+    log(`${crm.name}: list "${listName}" → ${listId}`);
+  } else {
+    log(`${crm.name}: no list concept — records are upserted without a working set`);
+  }
+
+  let eligible = 0;
+  let written = 0;
+  let withoutAddress = 0;
 
   for (const lead of leads) {
     if (!lead.deliverable || !lead.domain) continue;
-    const companyId = await attio.upsertCompany({ domain: lead.domain, name: lead.company });
-    const personId = await attio.upsertPerson({
-      email: lead.email, fullName: lead.person_name,
-      title: lead.person_title, companyDomain: lead.domain,
+    eligible += 1;
+    // An address is the person's unique key in every CRM here. Without one there is nothing
+    // to upsert — and building a record with an undefined email is worse than skipping it.
+    if (!lead.email) { withoutAddress += 1; continue; }
+
+    const companyId = await crm.upsertCompany({
+      domain: lead.domain, name: lead.company, description: lead.category ?? null,
     });
-    await attio.addToList({ listId, recordId: companyId, parentObject: 'companies' });
+    const personId = await crm.upsertPerson({
+      email: lead.email, fullName: lead.person_name, title: lead.person_title, companyDomain: lead.domain,
+    });
+    if (listId) await crm.addToList({ listId, recordId: companyId, parentObject: 'companies' });
+    written += 1;
     log(`  ${lead.company} → company ${companyId}, person ${personId} (${lead.email_provider}, ${lead.verify})`);
   }
+
+  log(`${crm.name}: ${written} written of ${eligible} eligible`);
+  if (withoutAddress) {
+    log(`${crm.name}: ${withoutAddress} eligible row(s) have no address in this dataset — skipped, not faked`);
+  }
+  return { crm: crm.name, eligible, written, skipped_no_address: withoutAddress, supports_lists: crm.supportsLists !== false };
 }
 
 // ── receipt ──────────────────────────────────────────────────────────────────
@@ -275,7 +303,11 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const log = (s) => console.log(s);
 
-  if (args.list) { log(profiles().join('\n')); return; }
+  if (args.list) {
+    log(`icps     ${profiles().join(', ')}`);
+    log(`crms     ${knownCrms().join(', ')}`);
+    return;
+  }
   if (!existsSync(join(RULES_DIR, `${args.icp}.json`))) {
     throw new Error(`unknown ICP "${args.icp}". Try: ${profiles().join(', ')}`);
   }
@@ -311,14 +343,16 @@ async function main() {
 
   leads = await enrich(leads, rules, treg, log);
 
-  const attio = new Attio({ dryRun: !args.write, log: (l) => log(`           ${l}`) });
-  await writeback(leads, rules, attio, log);
+  // 3. writeback
+  const crmName = args.crm ?? rules.writeback.crm ?? 'attio';
+  const crm = createCrm(crmName, { dryRun: !args.write, log: (l) => log(`           ${l}`) });
+  const writebackResult = await writeback(leads, rules, crm, log);
 
   const r = receipt(leads, rules, treg);
   log('');
   log(`receipt  ${r.passed} passed · ${r.deliverable} deliverable · ${usd(r.spend_micro)} (enrichment: ${r.enrichment})`);
   log(`tiers    A ${r.tiers.A} · B ${r.tiers.B} · C ${r.tiers.C}`);
-  log(`attio    ${JSON.stringify(attio.receipt())}`);
+  log(`crm      ${JSON.stringify(crm.receipt())}`);
 
   writeFileSync(out, JSON.stringify({
     meta: {
@@ -336,6 +370,7 @@ async function main() {
       pipeline_version: '1.1.0',
     },
     receipt: r,
+    writeback: writebackResult,
     leads: leads.sort((a, b) => (b.fit ?? 0) - (a.fit ?? 0)),
     treg_calls: treg ? treg.log : [],
   }, null, 2));

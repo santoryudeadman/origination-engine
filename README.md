@@ -14,6 +14,10 @@ change that loses a working lead.
 
 Data layer **treg.to** · agentic authoring **omp** · **zero dependencies**.
 
+> **Come from a job spec?** [`docs/stack-map.md`](./docs/stack-map.md) maps Cursor, Clay, HubSpot,
+> Salesforce, Vercel and dialers to the exact file that implements each — including the three ways
+> this integration is normally written wrong.
+
 ### What it demonstrates
 
 | | |
@@ -21,7 +25,7 @@ Data layer **treg.to** · agentic authoring **omp** · **zero dependencies**.
 | **Reproducibility** | Every run replays from a config file. Same inputs → same decisions. |
 | **Cost as an invariant** | Per-run *and* per-day spend caps enforced in code, not watched on a dashboard. |
 | **Measurement** | A shadow-evaluation rig that decides whether a change is safe to promote. |
-| **Verifiability** | 43 assertions over the real pipeline and the real evaluator, plus stubbed-I/O tests for the retry path. |
+| **Verifiability** | 55 assertions over the real pipeline and the real evaluator, plus stubbed-I/O tests for retries and CRM payloads. |
 | **Resilience** | Bounded concurrency, classified retries, idempotent replays, no charge for a failure. |
 | **Agentic, deliberately** | Agents do the open-ended research; plain code does the repeatable pipeline. |
 | **CI** | Runs on every push with no install step and no secrets. |
@@ -77,7 +81,7 @@ of 23 Sep 2026, and the gates recompute it from `rules.json`.
 | **verified deliverable** | **20** |
 | spend | $2.33 |
 | **cost per deliverable lead** | **$0.1165** |
-| written to Attio | 20 companies · 20 people · 20 list entries |
+| writeback | 20 rows eligible — the published dataset omits addresses, so a replay skips them rather than writing malformed records |
 
 Enriching all 48 rows would have cost roughly $4.12. Qualifying first spent $2.33.
 
@@ -172,7 +176,7 @@ Needs Node ≥ 18 (built-in `fetch`). No dependencies.
 ## Verify it
 
 ```bash
-node scripts/verify.mjs         # 43 assertions: receipts, gate verdicts, determinism, spend rails, retries
+node scripts/verify.mjs         # 55 assertions: receipts, gate verdicts, determinism, rails, retries, CRM payloads
 node scripts/check-secrets.mjs  # no credentials in the tree
 ```
 
