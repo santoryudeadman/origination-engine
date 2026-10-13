@@ -51,6 +51,30 @@ Both are what the treg playbook recorded on the same ICP.
 
 ---
 
+## The second profile: under 50 employees
+
+Same pipeline, different ICP — and the motion changes.
+
+| | mid-market | small teams |
+|---|---|---|
+| profile | 51–200 staff | **under 50 staff** |
+| buyer | a *function* — marketing / growth | **the founder** |
+| universe built by | a provider run (treg.to) | targeted research (omp) |
+| rows sourced | 50 | 20 |
+| passed the free gates | 27 | 20 |
+| **tier A — contact now** | 6 | **13** |
+| enrichment | recorded · $2.33 | not run (needs a data token) |
+
+**The contrast is the point.** When you *buy* a list, the gates do the work — 23 of 50 rows
+never cost a cent. When you *construct* the market, the ICP is already applied, so the gates
+become a safety net and **timing** is the real constraint: 7 of the 20 had no recent reason
+to write. Fit was high across the board; the signal is what separated them.
+
+That is the segment most lists fail at. Directory size filters either exclude it or swallow
+it into `1–200`, and the buying committee is one person who is also the CEO.
+
+---
+
 ## Why this shape
 
 The order is the point. Most outbound stacks are built backwards — buy the list, enrich

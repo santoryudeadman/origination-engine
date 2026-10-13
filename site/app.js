@@ -23,7 +23,7 @@ const PROFILES = {
       ['country', 'US'], ['headcount', '1–49'], ['category', 'software / vertical SaaS'],
       ['buyer role', 'founder / CEO'], ['exclusions', 'services, dormant 12mo, in-CRM'],
     ],
-    note: 'Under 50 staff there is no marketing function — the buyer is the founder, and the <em>signal</em> does more work than the fit. Window: 120 days.',
+    note: 'Under 50 staff there is no marketing function — the buyer is the founder, and the <em>signal</em> does more work than the fit. Window: 120 days. This universe was assembled by targeted research rather than downloaded, so the free gates act as a safety net — the <em>tiering</em> is what narrows the list.',
   },
 };
 
@@ -102,7 +102,7 @@ function renderReceipt(t, r) {
     cells.push(
       cell('enrichment', 'not run', 'mut'),
       cell('tier A', String(t.tiers.A), 'good'),
-      cell('tier A + B', String(t.tiers.A + t.tiers.B), 'mut'),
+      cell('with a signal', String(t.rows.filter((r) => r.pass && r.signal_label).length), 'mut'),
       cell('source', 'public research', 'mut'),
     );
   }
