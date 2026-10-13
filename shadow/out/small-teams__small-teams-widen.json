@@ -1,0 +1,47 @@
+{
+  "universe": "run-small-teams.json",
+  "baseline": "small-teams.json",
+  "candidate": "small-teams-widen.json",
+  "reference_date": "2026-10-13",
+  "counts": {
+    "rows": 30,
+    "baseline_active": 30,
+    "candidate_active": 30,
+    "left": 0,
+    "joined": 0,
+    "tier_moves": 4,
+    "lost_deliverable": 0
+  },
+  "projected_cost": null,
+  "lift": null,
+  "verdict": "PROMOTE",
+  "because": "no rows leave the working set; 4 change tier",
+  "left_rows": [],
+  "joined_rows": [],
+  "tier_moves": [
+    {
+      "company": "boxes.dev",
+      "from": "B",
+      "to": "A",
+      "signal_age_days": 133
+    },
+    {
+      "company": "Outmarket AI",
+      "from": "B",
+      "to": "A",
+      "signal_age_days": 153
+    },
+    {
+      "company": "Greenboard",
+      "from": "B",
+      "to": "A",
+      "signal_age_days": 154
+    },
+    {
+      "company": "Paragon",
+      "from": "B",
+      "to": "A",
+      "signal_age_days": 160
+    }
+  ]
+}

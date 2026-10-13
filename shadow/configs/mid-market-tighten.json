@@ -1,0 +1,5 @@
+{
+  "$comment": "Candidate overlay, deep-merged onto pipeline/rules/mid-market.json. Fewer rows, fresher reason to write.",
+  "thresholds": { "icp_fit_pass": 0.55 },
+  "tiers": { "A": { "requires_fresh_signal_days": 60 } }
+}

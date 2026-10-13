@@ -1,0 +1,72 @@
+{
+  "universe": "run-mid-market.json",
+  "baseline": "mid-market.json",
+  "candidate": "mid-market-loosen.json",
+  "reference_date": "2026-09-23",
+  "counts": {
+    "rows": 50,
+    "baseline_active": 27,
+    "candidate_active": 32,
+    "left": 0,
+    "joined": 5,
+    "tier_moves": 3,
+    "lost_deliverable": 0
+  },
+  "projected_cost": {
+    "unit_cost_usd": 0.0863,
+    "baseline_usd": 2.33,
+    "candidate_usd": 2.76,
+    "delta_usd": 0.43
+  },
+  "lift": null,
+  "verdict": "PROMOTE TO SHADOW",
+  "because": "adds 5 row(s) that no evidence covers yet and costs $0.43 more per run — pay for them only after the labels justify it",
+  "left_rows": [],
+  "joined_rows": [
+    {
+      "company": "Nanonets",
+      "tier": "C",
+      "why": null
+    },
+    {
+      "company": "Gridware",
+      "tier": "C",
+      "why": null
+    },
+    {
+      "company": "LoanStreet Inc.",
+      "tier": "C",
+      "why": null
+    },
+    {
+      "company": "Wellfound",
+      "tier": "C",
+      "why": null
+    },
+    {
+      "company": "Roboflow",
+      "tier": "C",
+      "why": null
+    }
+  ],
+  "tier_moves": [
+    {
+      "company": "Certa.ai",
+      "from": "B",
+      "to": "A",
+      "signal_age_days": 107
+    },
+    {
+      "company": "Triomics",
+      "from": "C",
+      "to": "B",
+      "signal_age_days": 114
+    },
+    {
+      "company": "RudderStack",
+      "from": "C",
+      "to": "B",
+      "signal_age_days": 93
+    }
+  ]
+}

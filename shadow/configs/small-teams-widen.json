@@ -1,0 +1,5 @@
+{
+  "$comment": "Candidate overlay for the under-50 profile: accept weaker fits, give signals longer to count. In a small-company universe timing is the constraint, so this is the aggressive dial.",
+  "thresholds": { "icp_fit_pass": 0.45 },
+  "tiers": { "A": { "requires_fresh_signal_days": 180 } }
+}

@@ -1,0 +1,5 @@
+{
+  "$comment": "Candidate overlay: buy more rows and call older signals fresh. A volume play.",
+  "thresholds": { "icp_fit_pass": 0.45 },
+  "tiers": { "A": { "requires_fresh_signal_days": 120 } }
+}

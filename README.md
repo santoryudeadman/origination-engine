@@ -15,9 +15,28 @@ repo/
   site/             the deployable page (static)
   scripts/          check-secrets.mjs
   skills/           the omp skill: type an ICP, get a pipeline
+  shadow/           project #2 — the evaluation rig
   HOSTING.md        stack, free tiers, Vercel vs Cloudflare, credential model
   .env.example      TREG_TOKEN · ATTIO_TOKEN · kill switch
 ```
+
+---
+
+## The portfolio
+
+| # | Project | Status | The question it answers |
+|---|---|---|---|
+| 1 | **Origination Engine** — `pipeline/` | built | Can an ICP become a qualified, verified pipeline in a CRM, cheaply and repeatably? |
+| 2 | **Shadow evaluation** — `shadow/` | built | Is a proposed config change safe to promote, *before* it ships? |
+| 3 | **Signal attribution ledger** | next | Which signal actually paid back its spend? |
+
+Projects 1 and 3 are the easy half: sourcing and spending. Project 2 is the half everyone
+skips — **measuring whether a change helped**. Every GTM system accumulates unmeasured
+changes; this repo ships the rig that catches them.
+
+The obvious third project — an AI responder for inbound replies — is deliberately *not* here.
+It is a well-documented pattern elsewhere, and re-implementing someone's writeup proves you
+read it. Measuring what everyone asserts and nobody checks is the differentiator.
 
 ---
 
@@ -121,6 +140,11 @@ node pipeline/run.mjs --live --write
 
 # the page
 npx serve site
+
+# project 2 — shadow evaluation (no keys, no network)
+node shadow/evaluate.mjs --universe site/data/run-mid-market.json \
+  --baseline pipeline/rules/mid-market.json \
+  --candidate shadow/configs/mid-market-tighten.json
 ```
 
 Needs Node ≥ 18 (built-in `fetch`). No dependencies.
